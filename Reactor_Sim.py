@@ -13,8 +13,8 @@ from Kinetics import dif_rxn, kinetic_const, rxn, rxn_BT
 from Thermo import Thermo_EquilB
 
 class Polymerization:
-
-    molar_masses = np.array([18.01528,  # Water [dW, dCL, dCD, dAA, dP1, dBACA, dTN, dTC, dTA]
+    #g/mol
+    molar_masses = np.array([18.01528,  # W
                     113.159,  # CL
                     226.318,  # CD
                     60.05256,  # AA
@@ -22,11 +22,12 @@ class Polymerization:
                     113.1595,  # BACA
                     114.1674,  # TN
                     130.1668,  # TCO
-                    43.04522])
+                    43.04522]) # TA
 
-    def __init__(self, Temperature, Initial_Charge, Start_Time, End_Time, N, flag, P=None, units=None):
-        if flag == 0:
-
+    def __init__(self, Temperature, Initial_Charge, End_Time, ideal=True, P=None, units=None):
+        Start_Time = 0
+        N=End_Time*10*3600
+        if ideal==True: # assumes all species remain in liquid phase
             state, time = self.reaction_l(Temperature, Initial_Charge, Start_Time, End_Time, N)
             state = np.asarray(state)
 
@@ -61,10 +62,9 @@ class Polymerization:
 
             self.Nylon = np.add(np.add(np.add(self.BACA, self.TN), self.TCO), self.TA)
 
-        if flag == 1:
-
+        if ideal==False: # assumes some species enter vapor phase
             if P is None:
-                raise ValueError('Specify System Pressure')
+                raise ValueError('Please Specify System Pressure')
             else:
                 pass
 
@@ -100,7 +100,7 @@ class Polymerization:
             self.Nylon = np.add(np.add(np.add(self.BACA, self.TN), self.TCO), self.TA)
 
     def reaction_l(self, pars, initial_charge, start_t, end_t, incr):
-        t = np.linspace(start_t, end_t*3600, incr)
+        t = np.linspace(start_t, end_t*3600, incr) # initialize time vector in seconds
 
         '''
         molar_masses = [18.01528,  # Water [dW, dCL, dCD, dAA, dP1, dBACA, dTN, dTC, dTA]
@@ -113,11 +113,13 @@ class Polymerization:
                         130.1668,  # TCO
                         43.04522]  # TA
         '''
-        total_mass = sum(initial_charge)
-        initial_conc = [initial_charge[i] * 1000 / self.molar_masses[i] / total_mass for i in range(len(initial_charge))]
+        total_mass = sum(initial_charge) # kg
+        initial_conc = [charge * 1000 / self.molar_masses[i] / total_mass for i,charge in enumerate(initial_charge)] # mol of species / kg of mixture
 
+        def dNylon_varT(t,state):
+            pass
 
-        def dNylon(state, t):
+        def dNylon(state,t):
             T = pars
             #W = state[0]
             #CL = state[1]
@@ -133,7 +135,6 @@ class Polymerization:
             current_state = dif_rxn(reactions)
             return current_state
 
-        PM = 0
 
         state_solved = odeint(dNylon, initial_conc, t)
         state_solved = np.multiply(state_solved, total_mass)
@@ -144,11 +145,11 @@ class Polymerization:
 
         t = np.linspace(start_t, end_t*3600, incr)
 
-        total_mass = sum(initial_charge)
-        initial_conc = [initial_charge[i] * 1000 / self.molar_masses[i] / total_mass for i in range(len(initial_charge))]
+        total_mass = sum(initial_charge) # kg
+        initial_conc = [charge * 1000 / self.molar_masses[i] / total_mass for i,charge in enumerate(initial_charge)] # mol of species / kg of mixture
 
 
-        def dNylon(state, t):
+        def dNylon(state,t):
             T = pars
             #W = state[0]
             #CL = state[1]
@@ -164,7 +165,6 @@ class Polymerization:
             current_state = dif_rxn(reactions)
             return current_state
 
-        PM = 0
 
         state_solved = odeint(dNylon, initial_conc, t)
         state_solved = np.multiply(state_solved, total_mass)
@@ -173,11 +173,20 @@ class Polymerization:
 
 
 
-
-state = [1, 99, 0, 0, 0, 0, 0, 0, 0]
-
-Poly = Polymerization(473, state, 0, 30, 10000, 1, P=101325, units='kg')
-Poly2 = Polymerization(473, state, 0, 30, 10000, 0, units='kg')
+# run simulation
+# set initial charges in kg
+state_dict={'W':3,
+            'CL':3*240,
+            'CD':0,
+            'AA':0,
+            'P1':0,
+            'BACA':0,
+            'TN':0,
+            'TC':0,
+            'TA':0,}
+state = [i for i in state_dict.values()] # extract initial charges for input
+Poly = Polymerization(473, state, 30, ideal=False, P=101325, units='kg')
+Poly2 = Polymerization(473, state, 30, ideal=True, units='kg')
 
 
 fig = plt.figure()
