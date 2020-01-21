@@ -4,7 +4,16 @@ from scipy.optimize import fsolve
 import matplotlib.pyplot as plt
 
 
-def dif_rxn(Reactions):
+def dif_rxn(condition, max_T, T_rate, P = None):
+	T = condition[11]
+	k, K = kinetic_const(T, condition[7])
+
+	if P == None:
+		Reactions = rxn(condition, k, K)
+	else:
+		Reactions = rxn_BT(condition, k, K, T, P, 100)
+
+
 	R1 = Reactions[0]
 	R2 = Reactions[1]
 	R3 = Reactions[2]
@@ -17,6 +26,10 @@ def dif_rxn(Reactions):
 	R10 = Reactions[9]
 	R11 = Reactions[10]
 	R12 = Reactions[11]
+	R13 = Reactions[12]
+	R14 = Reactions[13]
+	R15 = Reactions[14]
+
 
 	dW = R2 + R3 + R4 + R5 + R11 + R12 - (R1 + R8)
 	dCL = -(R1 + R6 + R7)
@@ -27,8 +40,11 @@ def dif_rxn(Reactions):
 	dTN = R2 + R6 + R8 + R9 - (R5 + R12)
 	dTC = R2 + R6 + R8 + R9 + R11 - R5
 	dTA = R11 + R12
+	dCHA = -(R13 + R14 + R15)
+	dTCHA = R13 + R14 + R15
+	dT = T_rate*T*(max_T-T)
 	
-	return [dW, dCL, dCD, dAA, dP1, dBACA, dTN, dTC, dTA]	
+	return [dW, dCL, dCD, dAA, dP1, dBACA, dTN, dTC, dTA, dCHA, dTCHA, dT]
 
 rxn_const = {
 				1: [1.66e2, 8.32e4, 1.2e4, 7.87e4, 8.03e3, -33.01],
@@ -85,7 +101,13 @@ def rxn(conc, k, K):
 	K3 = K[2]
 	K4 = K[3]
 	K5 = K[4]
-	
+
+	for i in conc:
+		if i < 0:
+			i == 0
+		else:
+			pass
+
 	W = conc[0]
 	CL = conc[1]
 	CD = conc[2]
@@ -95,70 +117,69 @@ def rxn(conc, k, K):
 	TN = conc[6]
 	TC = conc[7]
 	TA = conc[8]
+	CHA = conc[9]
+	TCHA = conc[10]
 
-
-
-	if BACA != 0 or TN !=0:
-
-		P2 = TC*(BACA/(BACA+TN))
-		P3 = TC*BACA*TN/(BACA+TN)/(BACA+TN)
-
-	else:
-
-		P2 = 0
-		P3 = 0
 																																																																																													
 	def R_1(CL, W, P1, k1, K1):
 		
 		return k1*CL*W-k1/K1*P1
 		
-	def R_2(P1, P2, W, k2, K2):   
-		
-		return k2*P1*P1 - k2/K2*P2*W
-		
-	def R_3(P1, TC, W, BACA, TN, k2, K2):
+	def R_2(P1, W, TN, TC, BACA, TCHA,  k2, K2):
 
-		if BACA != 0 or TN != 0:
-			return k2*P1*TC-k2/K2*W*TC*(BACA/(BACA+TN))
+		if any([TC !=0 , BACA !=0 , TCHA !=0]):
+			return k2*P1*P1 - k2/K2*W*TN*TC/(TC+BACA+TCHA)
+		else:
+			return k2*P1*P1
+		
+	def R_3(P1, TC, W, BACA, TN, TA, k2, K2):
+
+		if any([BACA !=0, TN !=0, TA !=0]):
+			return k2*P1*TC - k2/K2*W*TC*BACA/(BACA + TN + TA)
 		else:
 			return k2*P1*TC
 		
-	def R_4(TN, P1, W, BACA, TC, k2, K2):
+	def R_4(TN, P1, W, BACA, TC, TCHA, k2, K2):
 
-		if BACA != 0 or TC != 0:
-			return k2*TN*P1-k2/K2*W*TN*(BACA/(BACA+TC))
+		if any([BACA != 0, TC != 0, TCHA != 0]):
+			return k2*TN*P1-k2/K2*W*TN*BACA/(BACA + TC + TCHA)
 		else:
 			return k2*TN*P1
 		
-	def R_5(TN, TC, W, BACA, k2, K2):
+	def R_5(TN, TC, W, BACA, TA, k2, K2):
 
-		if BACA != 0 or TN != 0:
-			return k2*TN*TC-k2/K2*W*BACA*(BACA/(BACA+TN))
+		if any([BACA != 0, TN != 0, TA != 0]):
+			return k2*TN*TC-k2/K2*W*BACA*BACA/(BACA + TN + TA)
 		else:
 			return k2*TN*TC
 		
-	def R_6(P1, CL, P2, k3, K3):
+	def R_6(P1, CL, TN, TC, BACA, TCHA, k3, K3):
+		if any([TC != 0, BACA != 0, TCHA != 0]):
+			return k3*P1*CL-k3/K3*TN*TC/(TC + BACA + TCHA)
+		else:
+			return k3 * P1 * CL
 		
-		return k3*P1*CL-k3/K3*P2
-		
-	def R_7(TN, CL, BACA, TC, k3, K3):
-		if BACA != 0 or TN != 0:
-			return k3*TN*CL-k3/K3*TN*(BACA/(BACA+TN))
+	def R_7(TN, CL, BACA, TC, TCHA, k3, K3):
+		if any([BACA != 0, TC != 0, TCHA !=0]):
+			return k3*TN*CL-k3/K3*TN*BACA/(BACA + TC + TCHA)
 		else:
 			return k3*TN*CL
 		
-	def R_8(CD, W, P2, k4, K4):
+	def R_8(CD, W, TN, TC, BACA, TCHA, k4, K4):
+		if any([TC != 0, BACA != 0, TCHA !=0]):
+			return k4*CD*W-k4/K4*TN*TC/(TC + BACA + TCHA)
+		else:
+			return k4*CD*W
 		
-		return k4*CD*W-k4/K4*P2
+	def R_9(P1, CD, TN, BACA, TC, TCHA, k5, K5):
+		if any([BACA !=0, TC !=0, TCHA !=0]):
+			return k5*P1*CD-k5/K5*TN*BACA*TC/(BACA + TC + TCHA)/(BACA + TC + TCHA)
+		else:
+			return k5*P1*CD
 		
-	def R_9(P1, CD, P3, k5, K5):
-		
-		return k5*P1*CD-k5/K5*P3
-		
-	def R_10(TN, CD, BACA, TC, k5, K5):
-
-		if BACA != 0 or TC != 0:
-			return k5*TN*CD-k5/K5*TN*(BACA/(BACA+TC))
+	def R_10(TN, CD, BACA, TC, TCHA, k5, K5):
+		if any([BACA !=0, TC !=0, TCHA !=0]):
+			return k5*TN*CD-k5/K5*TN*(BACA/(BACA + TC + TCHA))**2
 		else:
 			return k5*TN*CD
 		
@@ -175,21 +196,46 @@ def rxn(conc, k, K):
 			return k2*AA*TN-k2/K2*W*TA*(BACA/(TC+BACA))
 		else:
 			return k2*AA*TN
-	
+
+	def R_13(CHA, CL, TCHA, TN, BACA, k3, K3):
+
+		if TN != 0 or BACA != 0:
+			return k3*CHA*CL - k3/K3*TCHA*(TN/(TN+BACA))
+		else:
+			return k3*CHA*CL
+
+	def R_14(CHA, P1, W, TCHA, TN, BACA, k2, K2):
+
+		if TN != 0 or BACA != 0:
+			return k2*CHA*P1 - k2/K2*W*TCHA*(TN/(TN + BACA))
+		else:
+			return k2*CHA*P1
+
+	def R_15(CHA, TC, W, TCHA, BACA, TN, k2, K2):
+
+		if TN != 0 or BACA != 0:
+			return k2*CHA*TC - k2/K2*W*TCHA*(BACA/(TN + BACA))
+
+		else:
+			return k2*CHA*TC
+
 	R1 = R_1(CL, W, P1, k1, K1)
-	R2 = R_2(P1, P2, W, k2, K2)
-	R3 = R_3(P1, TC, W, BACA, TN, k2, K2)
-	R4 = R_4(TN, P1, W, BACA, TC, k2, K2)
-	R5 = R_5(TN, TC, W, BACA, k2, K2)
-	R6 = R_6(P1, CL, P2, k3, K3)
-	R7 = R_7(TN, CL, BACA, TC, k3, K3)
-	R8 = R_8(CD, W, P2, k4, K4)
-	R9 = R_9(P1, CD, P3, k5, K5)
-	R10 = R_10(TN, CD, BACA, TC, k5, K5)
+	R2 = R_2(P1, W, TN, TC, BACA, TCHA, k2, K2)
+	R3 = R_3(P1, TC, W, BACA, TN, TA, k2, K2)
+	R4 = R_4(TN, P1, W, BACA, TC, TCHA, k2, K2)
+	R5 = R_5(TN, TC, W, BACA, TA, k2, K2)
+	R6 = R_6(P1, CL, TN, TC, BACA, TCHA, k3, K3)
+	R7 = R_7(TN, CL, BACA, TC, TCHA, k3, K3)
+	R8 = R_8(CD, W, TN, TC, BACA, TCHA, k4, K4)
+	R9 = R_9(P1, CD, TN, BACA, TC, TCHA, k5, K5)
+	R10 = R_10(TN, CD, BACA, TC, TCHA, k5, K5)
 	R11 = R_11(AA, P1, W, TA, TC, BACA, k2, K2)
 	R12 = R_12(AA, TN, W, TA, BACA, TC, k2, K2)
-	
-	return [R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12]
+	R13 = R_13(CHA, CL, TCHA, TN, BACA, k3, K3)
+	R14 = R_14(CHA, P1, W, TCHA, TN, BACA, k2, K2)
+	R15 = R_15(CHA, TC, W, TCHA, BACA, TN, k2, K2)
+
+	return [R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15]
 
 
 def rxn_BT(conc, k, K, T, P, max_iter):
@@ -205,6 +251,12 @@ def rxn_BT(conc, k, K, T, P, max_iter):
 	K4 = K[3]
 	K5 = K[4]
 
+	for i in conc:
+		if i < 0:
+			i == 0
+		else:
+			pass
+
 	W = conc[0]
 	CL = conc[1]
 	CD = conc[2]
@@ -214,6 +266,8 @@ def rxn_BT(conc, k, K, T, P, max_iter):
 	TN = conc[6]
 	TC = conc[7]
 	TA = conc[8]
+	CHA = conc[9]
+	TCHA = conc[10]
 
 	zw = W/(W+CL)
 	zcap = CL/(W+CL)
@@ -224,69 +278,65 @@ def rxn_BT(conc, k, K, T, P, max_iter):
 	W = L[0]*xw[0]
 	CL = L[0]*xcap[0]
 
-
-
-	if BACA != 0 or TN != 0:
-
-		P2 = TC * (BACA / (BACA + TN))
-		P3 = TC * BACA * TN / (BACA + TN) / (BACA + TN)
-
-	else:
-
-		P2 = 0
-		P3 = 0
-
 	def R_1(CL, W, P1, k1, K1):
 
 		return k1 * CL * W - k1 / K1 * P1
 
-	def R_2(P1, P2, W, k2, K2):
+	def R_2(P1, W, TN, TC, BACA, TCHA, k2, K2):
 
-		return k2 * P1 * P1 - k2 / K2 * P2 * W
+		if any([TC != 0, BACA != 0, TCHA != 0]):
+			return k2 * P1 * P1 - k2 / K2 * W * TN * TC / (TC + BACA + TCHA)
+		else:
+			return k2 * P1 * P1
 
-	def R_3(P1, TC, W, BACA, TN, k2, K2):
+	def R_3(P1, TC, W, BACA, TN, TA, k2, K2):
 
-		if BACA != 0 or TN != 0:
-			return k2 * P1 * TC - k2 / K2 * W * TC * (BACA / (BACA + TN))
+		if any([BACA != 0, TN != 0, TA != 0]):
+			return k2 * P1 * TC - k2 / K2 * W * TC * BACA / (BACA + TN + TA)
 		else:
 			return k2 * P1 * TC
 
-	def R_4(TN, P1, W, BACA, TC, k2, K2):
+	def R_4(TN, P1, W, BACA, TC, TCHA, k2, K2):
 
-		if BACA != 0 or TC != 0:
-			return k2 * TN * P1 - k2 / K2 * W * TN * (BACA / (BACA + TC))
+		if any([BACA != 0, TC != 0, TCHA != 0]):
+			return k2 * TN * P1 - k2 / K2 * W * TN * BACA / (BACA + TC + TCHA)
 		else:
 			return k2 * TN * P1
 
-	def R_5(TN, TC, W, BACA, k2, K2):
+	def R_5(TN, TC, W, BACA, TA, k2, K2):
 
-		if BACA != 0 or TN != 0:
-			return k2 * TN * TC - k2 / K2 * W * BACA * (BACA / (BACA + TN))
+		if any([BACA != 0, TN != 0, TA != 0]):
+			return k2 * TN * TC - k2 / K2 * W * BACA * BACA / (BACA + TN + TA)
 		else:
 			return k2 * TN * TC
 
-	def R_6(P1, CL, P2, k3, K3):
+	def R_6(P1, CL, TN, TC, BACA, TCHA, k3, K3):
+		if any([TC != 0, BACA != 0, TCHA != 0]):
+			return k3 * P1 * CL - k3 / K3 * TN * TC / (TC + BACA + TCHA)
+		else:
+			return k3 * P1 * CL
 
-		return k3 * P1 * CL - k3 / K3 * P2
-
-	def R_7(TN, CL, BACA, TC, k3, K3):
-		if BACA != 0 or TN != 0:
-			return k3 * TN * CL - k3 / K3 * TN * (BACA / (BACA + TN))
+	def R_7(TN, CL, BACA, TC, TCHA, k3, K3):
+		if any([BACA != 0, TC != 0, TCHA != 0]):
+			return k3 * TN * CL - k3 / K3 * TN * BACA / (BACA + TC + TCHA)
 		else:
 			return k3 * TN * CL
 
-	def R_8(CD, W, P2, k4, K4):
+	def R_8(CD, W, TN, TC, BACA, TCHA, k4, K4):
+		if any([TC != 0, BACA != 0, TCHA != 0]):
+			return k4 * CD * W - k4 / K4 * TN * TC / (TC + BACA + TCHA)
+		else:
+			return k4 * CD * W
 
-		return k4 * CD * W - k4 / K4 * P2
+	def R_9(P1, CD, TN, BACA, TC, TCHA, k5, K5):
+		if any([BACA != 0, TC != 0, TCHA != 0]):
+			return k5 * P1 * CD - k5 / K5 * TN * BACA * TC / (BACA + TC + TCHA) / (BACA + TC + TCHA)
+		else:
+			return k5 * P1 * CD
 
-	def R_9(P1, CD, P3, k5, K5):
-
-		return k5 * P1 * CD - k5 / K5 * P3
-
-	def R_10(TN, CD, BACA, TC, k5, K5):
-
-		if BACA != 0 or TC != 0:
-			return k5 * TN * CD - k5 / K5 * TN * (BACA / (BACA + TC))
+	def R_10(TN, CD, BACA, TC, TCHA, k5, K5):
+		if any([BACA != 0, TC != 0, TCHA != 0]):
+			return k5 * TN * CD - k5 / K5 * TN * (BACA / (BACA + TC + TCHA)) ** 2
 		else:
 			return k5 * TN * CD
 
@@ -304,20 +354,45 @@ def rxn_BT(conc, k, K, T, P, max_iter):
 		else:
 			return k2 * AA * TN
 
+	def R_13(CHA, CL, TCHA, TN, BACA, k3, K3):
+
+		if TN != 0 or BACA != 0:
+			return k3 * CHA * CL - k3 / K3 * TCHA * (TN / (TN + BACA))
+		else:
+			return k3 * CHA * CL
+
+	def R_14(CHA, P1, W, TCHA, TN, BACA, k2, K2):
+
+		if TN != 0 or BACA != 0:
+			return k2 * CHA * P1 - k2 / K2 * W * TCHA * (TN / (TN + BACA))
+		else:
+			return k2 * CHA * P1
+
+	def R_15(CHA, TC, W, TCHA, BACA, TN, k2, K2):
+
+		if TN != 0 or BACA != 0:
+			return k2 * CHA * TC - k2 / K2 * W * TCHA * (BACA / (TN + BACA))
+
+		else:
+			return k2 * CHA * TC
+
 	R1 = R_1(CL, W, P1, k1, K1)
-	R2 = R_2(P1, P2, W, k2, K2)
-	R3 = R_3(P1, TC, W, BACA, TN, k2, K2)
-	R4 = R_4(TN, P1, W, BACA, TC, k2, K2)
-	R5 = R_5(TN, TC, W, BACA, k2, K2)
-	R6 = R_6(P1, CL, P2, k3, K3)
-	R7 = R_7(TN, CL, BACA, TC, k3, K3)
-	R8 = R_8(CD, W, P2, k4, K4)
-	R9 = R_9(P1, CD, P3, k5, K5)
-	R10 = R_10(TN, CD, BACA, TC, k5, K5)
+	R2 = R_2(P1, W, TN, TC, BACA, TCHA, k2, K2)
+	R3 = R_3(P1, TC, W, BACA, TN, TA, k2, K2)
+	R4 = R_4(TN, P1, W, BACA, TC, TCHA, k2, K2)
+	R5 = R_5(TN, TC, W, BACA, TA, k2, K2)
+	R6 = R_6(P1, CL, TN, TC, BACA, TCHA, k3, K3)
+	R7 = R_7(TN, CL, BACA, TC, TCHA, k3, K3)
+	R8 = R_8(CD, W, TN, TC, BACA, TCHA, k4, K4)
+	R9 = R_9(P1, CD, TN, BACA, TC, TCHA, k5, K5)
+	R10 = R_10(TN, CD, BACA, TC, TCHA, k5, K5)
 	R11 = R_11(AA, P1, W, TA, TC, BACA, k2, K2)
 	R12 = R_12(AA, TN, W, TA, BACA, TC, k2, K2)
+	R13 = R_13(CHA, CL, TCHA, TN, BACA, k3, K3)
+	R14 = R_14(CHA, P1, W, TCHA, TN, BACA, k2, K2)
+	R15 = R_15(CHA, TC, W, TCHA, BACA, TN, k2, K2)
 
-	return [R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12]
+	return [R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15]
 
 def main():
 	pass
