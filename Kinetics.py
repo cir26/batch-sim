@@ -4,7 +4,7 @@ from scipy.optimize import fsolve
 import matplotlib.pyplot as plt
 
 
-def dif_rxn(condition, max_T, T_rate, P = None):
+def dif_rxn(condition, max_T, T_rate, P = None): # returns list of reaction interaction differential equation for each species
 	T = condition[11]
 	k, K = kinetic_const(T, condition[7])
 
@@ -46,16 +46,7 @@ def dif_rxn(condition, max_T, T_rate, P = None):
 	
 	return [dW, dCL, dCD, dAA, dP1, dBACA, dTN, dTC, dTA, dCHA, dTCHA, dT]
 
-rxn_const = {
-				1: [1.66e2, 8.32e4, 1.2e4, 7.87e4, 8.03e3, -33.01],
-				2: [5.26e6, 9.74e4, 3.37e6, 8.65e4, -2.49e4, 3.951],
-				3: [7.93e5, 9.56e4, 4.55e6, 8.42e4, -1.69e4, -29.08],
-				4: [2.38e8, 1.76e5, 6.47e8, 1.57e5, -4.02e4, -60.79],
-				5: [7.14e4, 8.92e4, 8.36e5, 8.54e4, -1.33e4, 2.439]
-			}
-
-
-def kinetic_const(T, TC):
+def kinetic_const(T, TC): # returns list of forward rxn constant, and list of reaction constant equilibrium (K=k/k_prime)
 	rxn_const = {
 					1: [1.66e2, 8.32e4, 1.2e4, 7.87e4, 8.03e3, -33.01],
 					2: [5.26e6, 9.74e4, 3.37e6, 8.65e4, -2.49e4, 3.951],
@@ -88,7 +79,7 @@ def kinetic_const(T, TC):
 		K.append(K_func(T, R, rxn_const, i))
 	return lil_k, K
 			
-def rxn(conc, k, K):
+def rxn(conc, k, K): # returns list of reaction computations
 	
 	k1 = k[0]
 	k2 = k[1]

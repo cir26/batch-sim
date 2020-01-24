@@ -13,6 +13,7 @@ from Kinetics import dif_rxn, kinetic_const, rxn, rxn_BT
 
 
 class Polymerization:
+
     #g/mol
     molar_masses = np.array([18.01528,  # W
                     113.159,  # CL
@@ -22,9 +23,9 @@ class Polymerization:
                     113.1595,  # BACA
                     114.1674,  # TN
                     130.1668,  # TCO
-                    43.04522,  #TA
-                    99.17, #CHA
-                    98.17]) #TCHA
+                    43.04522,  # TA
+                    99.17, # CHA
+                    98.17]) # TCHA
 
     def __init__(self, Temperature, Initial_Charge, End_Time, ideal=True, P=None, units=None):
         N=End_Time*10*3600
@@ -40,7 +41,7 @@ class Polymerization:
                 state = state*conversion
 
             self.t = np.divide(time, 3600)
-            self.W = state[:,0]
+            self.W = state[:,0] # units of mass
             self.CL = state[:,1]
             self.CD = state[:,2]
             self.AA = state[:,3]
@@ -114,7 +115,7 @@ class Polymerization:
                         43.04522]  # TA
         '''
         total_mass = sum(initial_charge[:-1])
-        initial_conc = [initial_charge[i] * 1000 / self.molar_masses[i] / total_mass for i in range(len(initial_charge)-1)]
+        initial_conc = [initial_charge[i] * 1000 / self.molar_masses[i] / total_mass for i in range(len(initial_charge)-1)] # mol of species / kg of total mixture
         initial_conc.append(initial_charge[11])
         print(initial_conc)
         def dNylon(state, t):
@@ -198,17 +199,11 @@ state_dict={'W':3,
             'CHA':0,
             'TCHA':0,
             'Temp':273.15+90}
-state = [i for i in state_dict.values()] # extract initial charges for input
-Poly = Polymerization([273.15+255, 1.4e-6], state, 10, ideal=False, P=101325, units='kg')
+state = [i for i in state_dict.values()] # extract initial conditions for input
+Poly = Polymerization([273.15+255, 1.4e-6], state, 10, ideal=False, P=1*101325, units='kg')
 Poly2 = Polymerization([273.15+255, 1.4e-6], state, 10, ideal=True, units='kg')
 
-def logf(t, T0, k, L):
-    t = t*3600
-    b = (L - T0)/T0
-    y = []
-    for i in t:
-        y.append(L/(1+b*np.exp(-k*i*L)))
-    return y
+
 
 # plot
 fig = plt.figure()
