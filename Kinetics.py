@@ -44,7 +44,7 @@ def dif_rxn(condition, max_T, T_rate, P_rate, min_P = None): # returns list of r
 	dCHA = -(R13 + R14 + R15)
 	dTCHA = R13 + R14 + R15
 	dT = T_rate*T*(max_T-T)
-	dP = (P_rate)*P*(1-(P/min_P))+1
+	dP = (P_rate)*P*(1-(P/min_P))
 	
 	return [dW, dCL, dCD, dAA, dP1, dBACA, dTN, dTC, dTA, dCHA, dTCHA, dT,dP]
 
