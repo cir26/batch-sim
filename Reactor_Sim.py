@@ -207,7 +207,7 @@ state = [i for i in state_dict.values()] # extract initial conditions for input
 Poly = Polymerization([273.15+255, 1.4e-6], state, 10, ideal=False, P=1*101325, units='kg')
 #Poly2 = Polymerization([273.15+255, 1.4e-6], state, 10, ideal=True, units='kg')
 
-
+# c
 
 # plot
 fig = plt.figure()
