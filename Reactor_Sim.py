@@ -212,10 +212,10 @@ Poly = Polymerization([273.15+255, 1.4e-6], state, 10, ideal=False, P=1*101325, 
 # plot
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
-ax1.plot(Poly.t, Poly.Nylon, 'k', alpha = 0.85, linestyle='dashdot', label='NRTL Binary Model, Pressure = 1 atm')
+ax1.plot(Poly.t, Poly.Nylon, 'k', alpha = 0.85, linestyle='dashdot', label='NRTL Binary Model')
 #ax1.plot(Poly2.t, Poly2.Nylon, 'k', label='Ideal')
-ax1.plot(Poly.t, Poly.T,'r',label='Temperature')
-ax1.plot(Poly.t, Poly.P,'b',label='Pressure')
+ax1.plot(Poly.t, Poly.T,'r',label='Temperature (K)')
+ax1.plot(Poly.t, Poly.P,'b',label='Pressure (atm e2)')
 ax1.minorticks_on()
 ax1.tick_params(axis='x', which='minor', direction='in')
 ax1.tick_params(axis='y', which='minor', direction='in')
