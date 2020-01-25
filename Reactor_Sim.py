@@ -68,7 +68,8 @@ class Polymerization:
             else:
                 pass
 
-            state, time, self.T = self.reaction_BT(Temperature, Initial_Charge, End_Time, N, P, 100)
+            state, time, self.T, self.P = self.reaction_BT(Temperature, Initial_Charge, End_Time, N, P, 100)
+            self.P=np.multiply(np.divide(self.P,101325),100) # convert pressure units to atm
             state = np.asarray(state)
 
             if units == 'kg':
@@ -114,8 +115,8 @@ class Polymerization:
                         130.1668,  # TCO
                         43.04522]  # TA
         '''
-        total_mass = sum(initial_charge[:-1])
-        initial_conc = [initial_charge[i] * 1000 / self.molar_masses[i] / total_mass for i in range(len(initial_charge)-1)] # mol of species / kg of total mixture
+        total_mass = sum(initial_charge[:-2])
+        initial_conc = [initial_charge[i] * 1000 / self.molar_masses[i] / total_mass for i in range(len(initial_charge)-2)] # mol of species / kg of total mixture
         initial_conc.append(initial_charge[11])
         print(initial_conc)
         def dNylon(state, t):
@@ -144,9 +145,10 @@ class Polymerization:
 
     def reaction_BT(self, pars, initial_charge, end_t, incr, Pres, max_iter):
         t = np.linspace(0, end_t*3600, incr)
-        total_mass = sum(initial_charge[:-1])
-        initial_conc = [initial_charge[i] * 1000 / self.molar_masses[i] / total_mass for i in range(len(initial_charge)-1)]
+        total_mass = sum(initial_charge[:-2])
+        initial_conc = [initial_charge[i] * 1000 / self.molar_masses[i] / total_mass for i in range(len(initial_charge)-2)]
         initial_conc.append(initial_charge[11])
+        initial_conc.append(initial_charge[12])
 
         def dNylon(state, t):
             max_T = pars[0]
@@ -162,15 +164,16 @@ class Polymerization:
             #TA = state[8]
             #CHA = state[9]
             #TCHA = state[10]
-            current_state = dif_rxn(state, max_T, T_rate, P = Pres)
+            current_state = dif_rxn(state, max_T, T_rate,P_rate=1e-4, min_P = Pres)
             return current_state
 
         state_solved = np.asarray(odeint(dNylon, initial_conc, t))
         materials = state_solved[:,:11]
         T = state_solved[:,11]
+        P = state_solved[:,12]
         moles = np.multiply(materials, total_mass)
 
-        return moles, t, T
+        return moles, t, T,P
 
 # W = state[0]
 # CL = state[1]
@@ -198,10 +201,11 @@ state_dict={'W':3,
             'TA':0,
             'CHA':0,
             'TCHA':0,
-            'Temp':273.15+90}
+            'Temp':273.15+90,
+            'Press':5*101325}
 state = [i for i in state_dict.values()] # extract initial conditions for input
 Poly = Polymerization([273.15+255, 1.4e-6], state, 10, ideal=False, P=1*101325, units='kg')
-Poly2 = Polymerization([273.15+255, 1.4e-6], state, 10, ideal=True, units='kg')
+#Poly2 = Polymerization([273.15+255, 1.4e-6], state, 10, ideal=True, units='kg')
 
 
 
@@ -209,8 +213,9 @@ Poly2 = Polymerization([273.15+255, 1.4e-6], state, 10, ideal=True, units='kg')
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
 ax1.plot(Poly.t, Poly.Nylon, 'k', alpha = 0.85, linestyle='dashdot', label='NRTL Binary Model, Pressure = 1 atm')
-ax1.plot(Poly2.t, Poly2.Nylon, 'k', label='Ideal')
+#ax1.plot(Poly2.t, Poly2.Nylon, 'k', label='Ideal')
 ax1.plot(Poly.t, Poly.T,'r',label='Temperature')
+ax1.plot(Poly.t, Poly.P,'b',label='Pressure')
 ax1.minorticks_on()
 ax1.tick_params(axis='x', which='minor', direction='in')
 ax1.tick_params(axis='y', which='minor', direction='in')
