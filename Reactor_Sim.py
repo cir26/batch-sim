@@ -164,7 +164,7 @@ class Polymerization:
             #TA = state[8]
             #CHA = state[9]
             #TCHA = state[10]
-            current_state = dif_rxn(state, max_T, T_rate,P_rate=1e-4, min_P = Pres)
+            current_state = dif_rxn(state, max_T, T_rate, P_rate=8e-5, min_P = Pres)
             return current_state
 
         state_solved = np.asarray(odeint(dNylon, initial_conc, t))
@@ -204,7 +204,7 @@ state_dict={'W':3,
             'Temp':273.15+90,
             'Press':5*101325}
 state = [i for i in state_dict.values()] # extract initial conditions for input
-Poly = Polymerization([273.15+255, 1.4e-6], state, 10, ideal=False, P=1*101325, units='kg')
+Poly = Polymerization([273.15+255, 1.4e-6], state, 8, ideal=False, P=1*101325, units='kg')
 #Poly2 = Polymerization([273.15+255, 1.4e-6], state, 10, ideal=True, units='kg')
 
 # c
