@@ -4,7 +4,7 @@ from scipy.optimize import fsolve
 import matplotlib.pyplot as plt
 
 
-def dif_rxn(condition, max_T, T_rate, P_rate, min_P = None): # returns list of reaction interaction differential equation for each species
+def dif_rxn(condition, max_T, T_rate, t, P_rate, min_P = None, P_delay=0, term_delay=0): # returns list of reaction interaction differential equation for each species
 	T = condition[11]
 	P = condition[12]
 	k, K = kinetic_const(T, condition[7])
@@ -13,7 +13,6 @@ def dif_rxn(condition, max_T, T_rate, P_rate, min_P = None): # returns list of r
 		Reactions = rxn(condition, k, K)
 	else:
 		Reactions = rxn_BT(condition, k, K, T, P, 100)
-
 
 	R1 = Reactions[0]
 	R2 = Reactions[1]
@@ -30,12 +29,15 @@ def dif_rxn(condition, max_T, T_rate, P_rate, min_P = None): # returns list of r
 	R13 = Reactions[12]
 	R14 = Reactions[13]
 	R15 = Reactions[14]
-
-
+	def forcing(t, delay):
+		if t < delay:
+			return 0
+		else:
+			return 1
 	dW = R2 + R3 + R4 + R5 + R11 + R12 - (R1 + R8)
 	dCL = -(R1 + R6 + R7)
 	dCD = -(R8 + R9 + R10)
-	dAA = -(R11 + R12)
+	dAA = -(R11 + R12)*forcing(t,term_delay)
 	dP1 = R1 - (2*R2 + R3 + R4 + R6 + R9 + R11)
 	dBACA = R3 + R4 + 2*R5 + R7 + R9 + 2*R10 + R12
 	dTN = R2 + R6 + R8 + R9 - (R5 + R12)
@@ -44,8 +46,7 @@ def dif_rxn(condition, max_T, T_rate, P_rate, min_P = None): # returns list of r
 	dCHA = -(R13 + R14 + R15)
 	dTCHA = R13 + R14 + R15
 	dT = T_rate*T*(max_T-T)
-	dP = P_rate * P * (1 - (P / min_P))
-	#dP= -P_rate*np.exp(P_rate*(t-P_delay))/((1+np.exp(P_delay_rate*(t-P_delay)))**2)
+	dP = P_rate * P * (1 - (P / min_P))*forcing(t,P_delay)
 
 	return [dW, dCL, dCD, dAA, dP1, dBACA, dTN, dTC, dTA, dCHA, dTCHA, dT,dP]
 

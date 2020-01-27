@@ -164,7 +164,7 @@ class Polymerization:
             #TA = state[8]
             #CHA = state[9]
             #TCHA = state[10]
-            current_state = dif_rxn(state, max_T, T_rate, P_rate=8e-5, min_P = Pres)
+            current_state = dif_rxn(state, max_T, T_rate, t=t, P_rate=1.8e-4, min_P = Pres, P_delay=3600*1, term_delay=0)
             return current_state
 
         state_solved = np.asarray(odeint(dNylon, initial_conc, t))
