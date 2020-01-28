@@ -191,39 +191,102 @@ class Polymerization:
 
 # run simulation
 # set initial charges in kg
-state_dict={'W':3, # input mass in kg
-            'CL':720,
-            'CD':0,
-            'AA':720*4/(10e3),
-            'P1':0,
-            'BACA':0,
-            'TN':0,
-            'TC':0,
-            'TA':0,
-            'CHA':0,
-            'TCHA':0,
-            'Temp':273.15+90,
-            'Press':5*101325}
-units='lbs'
-state = [i for i in state_dict.values()] # extract initial conditions for input
-Poly = Polymerization([273.15+255, 1.4e-6], state, 10, ideal=False, P=1*101325, units=units)
-Poly2 = Polymerization([273.15+255, 1.4e-6], state, 10, ideal=True, units=units)
+# state_dict={'W':10, # input mass in kg
+#             'CL':750,
+#             'CD':0,
+#             'AA':720*4*10e-5,
+#             'P1':0,
+#             'BACA':0,
+#             'TN':0,
+#             'TC':0,
+#             'TA':0,
+#             'CHA':0,
+#             'TCHA':0,
+#             'Temp':273.15+90,
+#             'Press':5*101325}
+# units='lbs'
+# state = [i for i in state_dict.values()] # extract initial conditions for input
+# Poly = Polymerization([273.15+255, 1.4e-6], state, 10, ideal=False, P=1*101325, units=units)
+# Poly2 = Polymerization([273.15+255, 1.4e-6], state, 10, ideal=True, units=units)
 
 
 # plot
-fig = plt.figure()
-ax1 = fig.add_subplot(111)
-ax1.plot(Poly.t, Poly.Nylon, 'k', alpha = 0.85, linestyle='dashdot', label='NRTL Binary Nylon-6 ({})'.format(units))
-ax1.plot(Poly2.t, Poly2.Nylon, 'k', label='Ideal Nylon-6 {}'.format(units))
-ax1.plot(Poly.t, Poly.T,'r',label='Temperature (K)')
-ax1.plot(Poly.t, Poly.P,'b',label='Pressure (atm e-2)')
-ax1.minorticks_on()
-ax1.tick_params(axis='x', which='minor', direction='in')
-ax1.tick_params(axis='y', which='minor', direction='in')
-ax1.yaxis.set_ticks_position('both')
-ax1.xaxis.set_ticks_position('both')
-ax1.tick_params(direction="in")
-ax1.legend()
-#ax1.set_ylabel('Nylon-6 (kg)')
-ax1.set_xlabel('Time (hours)')
+# fig = plt.figure()
+# ax1 = fig.add_subplot(111)
+# ax1.plot(Poly.t, Poly.Nylon, 'k', alpha = 0.85, linestyle='dashdot', label='NRTL Binary Nylon-6 ({})'.format(units))
+# ax1.plot(Poly2.t, Poly2.Nylon, 'k', label='Ideal Nylon-6 ({})'.format(units))
+# ax1.plot(Poly.t, Poly.T,'r',label='Temperature (K)')
+# ax1.plot(Poly.t, Poly.P,'b',label='Pressure (atm e-2)')
+# ax1.minorticks_on()
+# ax1.tick_params(axis='x', which='minor', direction='in')
+# ax1.tick_params(axis='y', which='minor', direction='in')
+# ax1.yaxis.set_ticks_position('both')
+# ax1.xaxis.set_ticks_position('both')
+# ax1.tick_params(direction="in")
+# ax1.legend()
+# ax1.set_xlabel('Time (hours)')
+# plt.show()
+
+from mpl_toolkits import mplot3d
+
+state_dict={'W':5, # input mass in kg
+                'CL':1000,
+                'CD':0,
+                'AA':720*4*10e-5,
+                'P1':0,
+                'BACA':0,
+                'TN':0,
+                'TC':0,
+                'TA':0,
+                'CHA':0,
+                'TCHA':0,
+                'Temp':273.15+90,
+                'Press':5*101325}
+
+def surface_plot(feed1,val1,feed2,val2,n):
+    Z=[0]*n
+    Z=[Z]*n
+    Z=np.array(Z)
+    for i,(x,y) in enumerate(zip(val1,val2)):
+        for j, (x1,y1) in enumerate(zip(x,y)):
+            state_dict[feed1]=x1
+            state_dict[feed2] = y1
+            units='lbs'
+            state = [i for i in state_dict.values()] # extract initial conditions for input
+            Poly = Polymerization([273.15+255, 1.4e-6], state, 10, ideal=False, P=1*101325, units=units)
+            Z[i,j]=Poly.Nylon[-1]
+    return Z
+
+n=10
+x = np.linspace(1,50, n)
+y = np.linspace(0.01,10, n)
+
+X, Y = np.meshgrid(x, y)
+Z1=surface_plot('W',X,'AA',Y,n)
+X=np.multiply(X,2.20462)
+Y=np.multiply(Y,2.20462)
+ax = plt.axes(projection='3d')
+ax.plot_surface(X, Y, Z1, rstride=1, cstride=1,
+                cmap='viridis', edgecolor='none')
+ax.set_title('Nylon-6 production with initial feeds')
+ax.set_xlabel('Water (lbs)')
+ax.set_ylabel('Acetic Acid (lbs)')
+ax.set_zlabel('Nylon 6 (lbs)')
+ax.view_init(25, 30)
 plt.show()
+
+# def f(x, y):
+#     return np.sin(np.sqrt(x ** 2 + y ** 2))
+#
+# x = np.linspace(-6, 6, 30)
+# y = np.linspace(-6, 6, 30)
+#
+# X, Y = np.meshgrid(x, y)
+# Z = f(X, Y)
+# print('X: ',X)
+# print('Y: ',Y)
+# print('Z: ',Z)
+# ax = plt.axes(projection='3d')
+# ax.plot_surface(X, Y, Z, rstride=1, cstride=1,
+#                 cmap='viridis', edgecolor='none')
+# ax.set_title('surface')
