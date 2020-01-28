@@ -118,7 +118,7 @@ class Polymerization:
         total_mass = sum(initial_charge[:-2])
         initial_conc = [initial_charge[i] * 1000 / self.molar_masses[i] / total_mass for i in range(len(initial_charge)-2)] # mol of species / kg of total mixture
         initial_conc.append(initial_charge[11])
-        print(initial_conc)
+
         def dNylon(state, t):
             max_T = pars[0]
             T_rate = pars[1]
@@ -133,7 +133,7 @@ class Polymerization:
             #TA = state[8]
             #CHA = state[9]
             #TCHA = state[10]
-            current_state = dif_rxn(state, max_T, T_rate)
+            current_state = dif_rxn(state, max_T, T_rate, t=t, term_delay=0)
             return current_state
 
         state_solved = np.asarray(odeint(dNylon, initial_conc, t))
@@ -164,7 +164,7 @@ class Polymerization:
             #TA = state[8]
             #CHA = state[9]
             #TCHA = state[10]
-            current_state = dif_rxn(state, max_T, T_rate, t=t, P_rate=1.8e-4, min_P = Pres, P_delay=3600*1, term_delay=0)
+            current_state = dif_rxn(state, max_T, T_rate, t=t, P_rate=1.3e-4, min_P = Pres, P_delay=3600*1, term_delay=0)
             return current_state
 
         state_solved = np.asarray(odeint(dNylon, initial_conc, t))
@@ -187,6 +187,7 @@ class Polymerization:
 # CHA = state[9]
 # TCHA = state[10]
 # Temp = state[11]
+# Pressure = state[12]
 
 # run simulation
 # set initial charges in kg
@@ -204,17 +205,17 @@ state_dict={'W':3,
             'Temp':273.15+90,
             'Press':5*101325}
 state = [i for i in state_dict.values()] # extract initial conditions for input
-Poly = Polymerization([273.15+255, 1.4e-6], state, 8, ideal=False, P=1*101325, units='kg')
-#Poly2 = Polymerization([273.15+255, 1.4e-6], state, 10, ideal=True, units='kg')
+Poly = Polymerization([273.15+255, 1.4e-6], state, 10, ideal=False, P=1*101325, units='kg')
+Poly2 = Polymerization([273.15+255, 1.4e-6], state, 10, ideal=True, units='kg')
 
 
 # plot
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
-ax1.plot(Poly.t, Poly.Nylon, 'k', alpha = 0.85, linestyle='dashdot', label='NRTL Binary Model')
-#ax1.plot(Poly2.t, Poly2.Nylon, 'k', label='Ideal')
+ax1.plot(Poly.t, Poly.Nylon, 'k', alpha = 0.85, linestyle='dashdot', label='NRTL Binary Nylon-6 (kg)')
+ax1.plot(Poly2.t, Poly2.Nylon, 'k', label='Ideal Nylon-6 (kg)')
 ax1.plot(Poly.t, Poly.T,'r',label='Temperature (K)')
-ax1.plot(Poly.t, Poly.P,'b',label='Pressure (atm e2)')
+ax1.plot(Poly.t, Poly.P,'b',label='Pressure (atm e-2)')
 ax1.minorticks_on()
 ax1.tick_params(axis='x', which='minor', direction='in')
 ax1.tick_params(axis='y', which='minor', direction='in')
@@ -222,6 +223,6 @@ ax1.yaxis.set_ticks_position('both')
 ax1.xaxis.set_ticks_position('both')
 ax1.tick_params(direction="in")
 ax1.legend()
-ax1.set_ylabel('Nylon-6 (kg)')
+#ax1.set_ylabel('Nylon-6 (kg)')
 ax1.set_xlabel('Time (hours)')
 plt.show()
