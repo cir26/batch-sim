@@ -48,13 +48,13 @@ class Polymerization:
                 pass
             state, time, self.T, self.P = self.reaction_BT(Temperature, Initial_Charge, End_Time, N, P, 100)
             self.P=np.divide(self.P,101325)  # convert pressure units to atm
-            state = np.asarray(state)
+            state_moles = np.asarray(state)  # moles of species
             if units == 'kg':
-                conversion = np.divide(self.molar_masses, 1000)
-                state = state*conversion
+                self.molar_masses = np.divide(self.molar_masses, 1000)
+                state = state_moles * self.molar_masses
             if units == 'lbs':
-                conversion = np.divide(self.molar_masses, 453.592)
-                state = state*conversion
+                self.molar_masses = np.divide(self.molar_masses, 453.592)
+                state = state_moles * self.molar_masses
             # perform addition and calculation of important data attributes to Polymerization object
             self = attr_calc(self, state_arr=state, time_arr=time)
 
@@ -148,16 +148,20 @@ state_dict={'W':13, # input mass in kg
             'TCHA':0,
             'Temp':273.15+90,
             'Press':5*101325}
-units='lbs' # convert final units to lbs
+units='kg' # convert final units to lbs
 state = [i for i in state_dict.values()] # extract initial conditions for input
-Poly = Polymerization([273.15+255, 1.4e-6], state, 10, ideal=False, P=1*101325, units=units)
-Poly2 = Polymerization([273.15+255, 1.4e-6], state, 10, ideal=True, units=units)
+Poly = Polymerization([273.15+255, 1.4e-6], state, 40, ideal=False, P=1*101325, units=units)
+Poly2 = Polymerization([273.15+255, 1.4e-6], state, 40, ideal=True, units=units)
 
 #plot
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
-ax1.plot(Poly.t, Poly.MWN, 'k', alpha = 0.85, linestyle='dashdot', label='NRTL Binary Nylon-6 ({})'.format(units))
-ax1.plot(Poly2.t, Poly2.MWN, 'k', label='Ideal Nylon-6 ({})'.format(units))
+#ax1.plot(Poly.t, Poly.MWW, 'k', alpha = 0.85, linestyle='dashdot', label='NRTL Binary Nylon-6 ({})'.format(units))
+#ax1.plot(Poly2.t, Poly2.MWW, 'k', label='Ideal Nylon-6 ({})'.format(units))
+#ax1.plot(Poly.t, Poly.MWN, 'k', alpha = 0.85, linestyle='dashdot', label='NRTL Binary Nylon-6 ({})'.format(units))
+#ax1.plot(Poly2.t, Poly2.MWN, 'k', label='Ideal Nylon-6 ({})'.format(units))
+ax1.plot(Poly.t, Poly.FAV, 'k', alpha = 0.85, linestyle='dashdot', label='NRTL Binary Nylon-6 ({})'.format(units))
+ax1.plot(Poly2.t, Poly2.FAV, 'k', label='Ideal Nylon-6 ({})'.format(units))
 #ax1.plot(Poly.t, Poly.T,'r',label='Temperature (K)')
 #ax1.plot(Poly.t, Poly.P,'b',label='Pressure (atm)')
 ax1.minorticks_on()
