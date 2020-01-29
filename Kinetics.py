@@ -47,7 +47,7 @@ def dif_rxn(condition, max_T, T_rate, t, P_rate=0, min_P = None, P_delay=0, term
 	dBACA = R3 + R4 + 2*R5 + R7 + R9 + 2*R10 + R12
 	dTN = R2 + R6 + R8 + R9 - (R5 + R12)
 	dTC = R2 + R6 + R8 + R9 + R11 - R5
-	dTA = R11 + R12
+	dTA = R11 + R12*forcing(t,term_delay)
 	dCHA = -(R13 + R14 + R15)
 	dTCHA = R13 + R14 + R15
 	dT = T_rate*T*(max_T-T)
