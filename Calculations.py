@@ -15,18 +15,32 @@ def attr_calc(self, state_arr, time_arr):
     self.TA = state_arr[:, 8]
     self.CHA = state_arr[:, 9]
     self.TCHA = state_arr[:, 10]
-    # calculate degree of polymerization
+    # calculate number-average degree of polymerization
     num = np.add(np.add(np.add(self.BACA, self.TN), self.TCO), self.P1)
     denom = np.add(self.TCO, self.P1)
     self.DP = np.divide(num, denom)
-    # calculate average molecular weight of polymer (N6)
-    self.AMW =
+            #W = [0]
+            #CL = [1]
+            #CD = [2]
+            #AA = [3]
+            #P1 = [4]
+            #BACA =[5]
+            #TN = [6]
+            #TCO = [7]
+            #TA = [8]
+            #CHA = [9]
+            #TCHA = [10]
+    # calculate weight-average molecular weight of polymer (N6)
+    #self.MWW =
+    # calculate number-average molecular weight of polymer (N6)
+    num = np.add(np.add(np.add(np.add(self.molar_masses[6]*self.TN,self.molar_masses[7]*self.TCO),self.molar_masses[5]*self.BACA),self.molar_masses[8]*self.TA),self.molar_masses[10]*self.TCHA)
+    denom = np.multiply(np.add(self.TN,self.TCO),0.5)
+    self.MWN = np.divide(num,denom)
     # calculate mass of oligomers
     self.OP2 = np.multiply(self.TCO, np.divide(self.TN, np.add(self.BACA, self.TN)))
     self.OP3 = np.multiply(self.OP2, np.divide(self.BACA, np.add(self.BACA, self.TN)))
     # calculate polymer (N6) mass
     self.Nylon = np.add(np.add(np.add(np.add(np.add(self.BACA, self.TN), self.TCO), self.TA), self.TCHA), self.P1)
-
 
     # return object
     return self

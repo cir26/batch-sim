@@ -32,22 +32,22 @@ class Polymerization:
         N=End_Time*10*3600
         if ideal == True:
             state, time, self.T = self.reaction_l(Temperature, Initial_Charge, End_Time, N)
-            state = np.asarray(state)
+            state_moles = np.asarray(state) # moles of species
             if units == 'kg':
-                conversion = np.divide(self.molar_masses, 1000)
-                state = state*conversion
+                self.molar_masses = np.divide(self.molar_masses, 1000)
+                state = state_moles*self.molar_masses
             if units == 'lbs':
-                conversion = np.divide(self.molar_masses, 453.592)
-                state = state*conversion
+                self.molar_masses = np.divide(self.molar_masses, 453.592)
+                state = state_moles*self.molar_masses
             # perform addition and calculation of important data attributes to Polymerization object
             self = attr_calc(self, state_arr=state, time_arr=time)
-        if ideal==False: # assumes some species enter vapor phase
+        if ideal == False:  # assumes some species enter vapor phase
             if P is None:
                 raise ValueError('Please Specify System Pressure')
             else:
                 pass
             state, time, self.T, self.P = self.reaction_BT(Temperature, Initial_Charge, End_Time, N, P, 100)
-            self.P=np.divide(self.P,101325)# convert pressure units to atm
+            self.P=np.divide(self.P,101325)  # convert pressure units to atm
             state = np.asarray(state)
             if units == 'kg':
                 conversion = np.divide(self.molar_masses, 1000)
@@ -156,10 +156,10 @@ Poly2 = Polymerization([273.15+255, 1.4e-6], state, 10, ideal=True, units=units)
 #plot
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
-ax1.plot(Poly.t, Poly.Nylon, 'k', alpha = 0.85, linestyle='dashdot', label='NRTL Binary Nylon-6 ({})'.format(units))
-ax1.plot(Poly2.t, Poly2.Nylon, 'k', label='Ideal Nylon-6 ({})'.format(units))
-ax1.plot(Poly.t, Poly.T,'r',label='Temperature (K)')
-ax1.plot(Poly.t, Poly.P,'b',label='Pressure (atm)')
+ax1.plot(Poly.t, Poly.MWN, 'k', alpha = 0.85, linestyle='dashdot', label='NRTL Binary Nylon-6 ({})'.format(units))
+ax1.plot(Poly2.t, Poly2.MWN, 'k', label='Ideal Nylon-6 ({})'.format(units))
+#ax1.plot(Poly.t, Poly.T,'r',label='Temperature (K)')
+#ax1.plot(Poly.t, Poly.P,'b',label='Pressure (atm)')
 ax1.minorticks_on()
 ax1.tick_params(axis='x', which='minor', direction='in')
 ax1.tick_params(axis='y', which='minor', direction='in')

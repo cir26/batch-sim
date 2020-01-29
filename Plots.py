@@ -5,7 +5,7 @@ from mpl_toolkits import mplot3d
 from matplotlib import animation
 from timeit import default_timer as timer
 ############################################################
-#Nylon-6 Production
+#Nylon-6 production playground
 ############################################################
 
 state_dict={'W':12.9375, # input mass in kg
