@@ -10,6 +10,7 @@ from scipy.optimize import curve_fit
 import numpy as np
 import matplotlib.pyplot as plt
 from Kinetics import dif_rxn, kinetic_const, rxn, rxn_BT
+from Calculations import attr_calc
 
 
 class Polymerization:
@@ -32,76 +33,32 @@ class Polymerization:
         if ideal == True:
             state, time, self.T = self.reaction_l(Temperature, Initial_Charge, End_Time, N)
             state = np.asarray(state)
-
             if units == 'kg':
                 conversion = np.divide(self.molar_masses, 1000)
                 state = state*conversion
             if units == 'lbs':
                 conversion = np.divide(self.molar_masses, 453.592)
                 state = state*conversion
-
-            self.t = np.divide(time, 3600)
-            self.W = state[:,0] # units of mass
-            self.CL = state[:,1]
-            self.CD = state[:,2]
-            self.AA = state[:,3]
-            self.P1 = state[:,4]
-            self.BACA = state[:,5]
-            self.TN = state[:,6]
-            self.TCO = state[:,7]
-            self.TA = state[:,8]
-            self.CHA = state[:,9]
-            self.TCHA = state[:,10]
-
-            num = np.add(np.add(np.add(self.BACA, self.TN), self.TCO), self.P1)
-            denom = np.add(self.TCO, self.P1)
-            self.DP = np.divide(num, denom)
-
-            self.OP2 = np.multiply(self.TCO, np.divide(self.TN, np.add(self.BACA, self.TN)))
-            self.OP3 = np.multiply(self.OP2, np.divide(self.BACA, np.add(self.BACA, self.TN)))
-
-            self.Nylon = np.add(np.add(np.add(np.add(np.add(self.BACA, self.TN), self.TCO), self.TA), self.TCHA), self.P1)
-
+            # perform addition and calculation of important data attributes to Polymerization object
+            self = attr_calc(self, state_arr=state, time_arr=time)
         if ideal==False: # assumes some species enter vapor phase
             if P is None:
                 raise ValueError('Please Specify System Pressure')
             else:
                 pass
-
             state, time, self.T, self.P = self.reaction_BT(Temperature, Initial_Charge, End_Time, N, P, 100)
-            self.P=np.multiply(np.divide(self.P,101325),100) # convert pressure units to atm e-2
+            self.P=np.divide(self.P,101325)# convert pressure units to atm
             state = np.asarray(state)
-
             if units == 'kg':
                 conversion = np.divide(self.molar_masses, 1000)
                 state = state*conversion
-
             if units == 'lbs':
                 conversion = np.divide(self.molar_masses, 453.592)
                 state = state*conversion
+            # perform addition and calculation of important data attributes to Polymerization object
+            self = attr_calc(self, state_arr=state, time_arr=time)
 
-            self.t = np.divide(time, 3600)
-            self.W = state[:,0]
-            self.CL = state[:,1]
-            self.CD = state[:,2]
-            self.AA = state[:,3]
-            self.P1 = state[:,4]
-            self.BACA = state[:,5]
-            self.TN = state[:,6]
-            self.TCO = state[:,7]
-            self.TA = state[:,8]
-            self.CHA = state[:,9]
-            self.TCHA = state[:,10]
-
-            num = np.add(np.add(np.add(self.BACA, self.TN), self.TCO), self.P1)
-            denom = np.add(self.TCO, self.P1)
-            self.DP = np.divide(num, denom)
-
-            self.OP2 = np.multiply(self.TCO, np.divide(self.TN, np.add(self.BACA, self.TN)))
-            self.OP3 = np.multiply(self.OP2, np.divide(self.BACA, np.add(self.BACA, self.TN)))
-
-            self.Nylon = np.add(np.add(np.add(np.add(np.add(self.BACA, self.TN), self.TCO), self.TA), self.TCHA), self.P1)
-
+    # ideal
     def reaction_l(self, pars, initial_charge, end_t, incr):
         t = np.linspace(0, end_t*3600, incr)
         '''
@@ -143,6 +100,7 @@ class Polymerization:
 
         return moles, t, T
 
+    # NRTL
     def reaction_BT(self, pars, initial_charge, end_t, incr, Pres, max_iter):
         t = np.linspace(0, end_t*3600, incr)
         total_mass = sum(initial_charge[:-2])
@@ -175,55 +133,40 @@ class Polymerization:
 
         return moles, t, T,P
 
-# W = state[0]
-# CL = state[1]
-# CD = state[2]
-# AA = state[3]
-# P1 = state[4]
-# BACA = state[5]
-# TN = state[6]
-# TC = state[7]
-# TA = state[8]
-# CHA = state[9]
-# TCHA = state[10]
-# Temp = state[11]
-# Pressure = state[12]
-
-# run simulation
+# test simulation
 # set initial charges in kg
-# state_dict={'W':10, # input mass in kg
-#             'CL':750,
-#             'CD':0,
-#             'AA':720*4*10e-5,
-#             'P1':0,
-#             'BACA':0,
-#             'TN':0,
-#             'TC':0,
-#             'TA':0,
-#             'CHA':0,
-#             'TCHA':0,
-#             'Temp':273.15+90,
-#             'Press':5*101325}
-# units='lbs'
-# state = [i for i in state_dict.values()] # extract initial conditions for input
-# Poly = Polymerization([273.15+255, 1.4e-6], state, 10, ideal=False, P=1*101325, units=units)
-# Poly2 = Polymerization([273.15+255, 1.4e-6], state, 10, ideal=True, units=units)
-
+state_dict={'W':13, # input mass in kg
+            'CL':750,
+            'CD':0,
+            'AA':1e-5,
+            'P1':0,
+            'BACA':0,
+            'TN':0,
+            'TC':0,
+            'TA':0,
+            'CHA':0,
+            'TCHA':0,
+            'Temp':273.15+90,
+            'Press':5*101325}
+units='lbs' # convert final units to lbs
+state = [i for i in state_dict.values()] # extract initial conditions for input
+Poly = Polymerization([273.15+255, 1.4e-6], state, 10, ideal=False, P=1*101325, units=units)
+Poly2 = Polymerization([273.15+255, 1.4e-6], state, 10, ideal=True, units=units)
 
 #plot
-# fig = plt.figure()
-# ax1 = fig.add_subplot(111)
-# ax1.plot(Poly.t, Poly.Nylon, 'k', alpha = 0.85, linestyle='dashdot', label='NRTL Binary Nylon-6 ({})'.format(units))
-# ax1.plot(Poly2.t, Poly2.Nylon, 'k', label='Ideal Nylon-6 ({})'.format(units))
-# ax1.plot(Poly.t, Poly.T,'r',label='Temperature (K)')
-# ax1.plot(Poly.t, Poly.P,'b',label='Pressure (atm e-2)')
-# ax1.minorticks_on()
-# ax1.tick_params(axis='x', which='minor', direction='in')
-# ax1.tick_params(axis='y', which='minor', direction='in')
-# ax1.yaxis.set_ticks_position('both')
-# ax1.xaxis.set_ticks_position('both')
-# ax1.tick_params(direction="in")
-# ax1.legend()
-# ax1.set_xlabel('Time (hours)')
-# plt.show()
-#
+fig = plt.figure()
+ax1 = fig.add_subplot(111)
+ax1.plot(Poly.t, Poly.Nylon, 'k', alpha = 0.85, linestyle='dashdot', label='NRTL Binary Nylon-6 ({})'.format(units))
+ax1.plot(Poly2.t, Poly2.Nylon, 'k', label='Ideal Nylon-6 ({})'.format(units))
+ax1.plot(Poly.t, Poly.T,'r',label='Temperature (K)')
+ax1.plot(Poly.t, Poly.P,'b',label='Pressure (atm)')
+ax1.minorticks_on()
+ax1.tick_params(axis='x', which='minor', direction='in')
+ax1.tick_params(axis='y', which='minor', direction='in')
+ax1.yaxis.set_ticks_position('both')
+ax1.xaxis.set_ticks_position('both')
+ax1.tick_params(direction="in")
+ax1.legend()
+ax1.set_xlabel('Time (hours)')
+plt.show()
+
