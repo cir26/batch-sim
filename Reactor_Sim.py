@@ -138,7 +138,7 @@ class Polymerization:
 state_dict={'W':13, # input mass in kg
             'CL':750,
             'CD':0,
-            'AA':1e-4,
+            'AA':1e-5,
             'P1':0,
             'BACA':0,
             'TN':0,
@@ -153,15 +153,17 @@ state = [i for i in state_dict.values()] # extract initial conditions for input
 Poly = Polymerization([273.15+255, 1.4e-6], state, 10, ideal=False, P=1*101325, units=units)
 Poly2 = Polymerization([273.15+255, 1.4e-6], state, 10, ideal=True, units=units)
 
-#plot
+#plots
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
-#ax1.plot(Poly.t, Poly.MWW, 'k', alpha = 0.85, linestyle='dashdot', label='NRTL Binary Nylon-6 MWW')
-#ax1.plot(Poly2.t, Poly2.MWW, 'k', label='Ideal Nylon-6 MWW')
-ax1.plot(Poly.t, Poly.MWN, 'k', alpha = 0.85, linestyle='dashdot', label='NRTL Binary Nylon-6 MWN')
-ax1.plot(Poly2.t, Poly2.MWN, 'k', label='Ideal Nylon-6 MWN')
-#ax1.plot(Poly.t, Poly.DP, 'k', alpha = 0.85, linestyle='dashdot', label='NRTL Binary Nylon-6 DP')
-#ax1.plot(Poly2.t, Poly2.DP, 'k', label='Ideal Nylon-6 DP')
+ax2 = fig.add_subplot(111)
+ax3 = fig.add_subplot(111)
+ax1.plot(Poly.t, Poly.MWW, 'k', alpha = 0.85, linestyle='dashdot', label='NRTL Binary Nylon-6 MWW (kg/mol)')
+ax1.plot(Poly2.t, Poly2.MWW, 'k', label='Ideal Nylon-6 MWW (kg/mol)')
+ax1.plot(Poly.t, Poly.MWN, 'g', alpha = 0.85, linestyle='dashdot', label='NRTL Binary Nylon-6 MWN (kg/mol)')
+ax1.plot(Poly2.t, Poly2.MWN, 'g', label='Ideal Nylon-6 MWN (kg/mol)')
+#ax2.plot(Poly.t, Poly.FAV, 'r', alpha = 0.85, linestyle='dashdot', label='NRTL Binary Nylon-6 FAV')
+#ax2.plot(Poly2.t, Poly2.FAV, 'r', label='Ideal Nylon-6 FAV')
 #ax1.plot(Poly.t, Poly.T,'r',label='Temperature (K)')
 #ax1.plot(Poly.t, Poly.P,'b',label='Pressure (atm)')
 # ax1.plot(Poly.t, Poly.TCO, 'k', alpha = 0.85, linestyle='dashdot', label='NRTL Binary Nylon-6 ({})'.format(units))
@@ -180,5 +182,9 @@ ax1.xaxis.set_ticks_position('both')
 ax1.tick_params(direction="in")
 ax1.legend()
 ax1.set_xlabel('Time (hours)')
+ax1.set_xlim([1,10])
+ax1.set_ylim([0,40])
 plt.show()
+
+
 

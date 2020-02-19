@@ -82,12 +82,12 @@ def Thermo_EquilB(T, P, F, zw, zcap, max_iter):
 
         V = 0
         L = F
-        return [V], [L], [F], [zw], [zcap], [0], [0], [g1_BP], [g2_BP]
+        return [V], [L], [F], [zw], [zcap], [0], [0], [g1_BP], [g2_BP], t12, t21
 
     elif P < ideal_DP:
         V = F
         L = 0
-        return [V], [L], [F], [0], [0], [zw], [zcap], [1], [1]
+        return [V], [L], [F], [0], [0], [zw], [zcap], [1], [1], t12, t21
 
     else:
         g1_guess = 1
@@ -129,7 +129,7 @@ def Thermo_EquilB(T, P, F, zw, zcap, max_iter):
         x_old = xw
 
     L = F - V
-    return V, L, F, xw, xcap, yw, ycap, g1_guess, g2_guess
+    return V, L, F, xw, xcap, yw, ycap, g1_guess, g2_guess, t12, t21
 
 '''
 V, L, F, xw, xcap, yw, ycap, g1, g2 = Thermo_EquilB(475, 60000, 1, .5, .5, 100)

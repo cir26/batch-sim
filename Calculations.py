@@ -48,7 +48,7 @@ def attr_calc(self, state_arr, time_arr):
     num = np.add(np.add(np.add(np.add(np.add(self.molar_masses[6]*self.TN,
                                              self.molar_masses[7]*self.TCO),
                                              self.molar_masses[5]*self.BACA),
-                                             self.molar_masses[4] * self.P1),
+                                             self.molar_masses[4]*self.P1),
                                              self.molar_masses[8]*self.TA),
                                              self.molar_masses[10]*self.TCHA)
     denom = np.multiply(np.add(np.add(np.add(self.TN,self.TCO),self.TA),self.TCHA),0.5)

@@ -17,6 +17,8 @@ def dif_rxn(condition, max_T, T_rate, t, P_rate=0, min_P = None, P_delay=0, term
 		Reactions = rxn(condition, k, K)
 	else:
 		Reactions = rxn_BT(condition, k, K, T, P, 100)
+		tau12 = Reactions[15]
+		tau21 = Reactions[16]
 
 	R1 = Reactions[0]
 	R2 = Reactions[1]
@@ -278,7 +280,7 @@ def rxn_BT(conc, k, K, T, P, max_iter):
 	F = W + CL
 
 	#Adjust Water and Caprolactam Concentrations with NRTL
-	V, L, F, xw, xcap, yw, ycap, g1, g2 = Thermo_EquilB(T, P, F, zw, zcap, 100)
+	V, L, F, xw, xcap, yw, ycap, g1, g2, t12, t21 = Thermo_EquilB(T, P, F, zw, zcap, 100)
 	W = L[0]*xw[0]
 	CL = L[0]*xcap[0]
 
@@ -396,7 +398,7 @@ def rxn_BT(conc, k, K, T, P, max_iter):
 	R14 = R_14(CHA, P1, W, TCHA, TN, BACA, k2, K2)
 	R15 = R_15(CHA, TC, W, TCHA, BACA, TN, k2, K2)
 
-	return [R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15]
+	return [R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15, t12, t21]
 
 def main():
 	pass
