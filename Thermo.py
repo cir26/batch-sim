@@ -51,8 +51,8 @@ def Thermo_EquilB(T, P, F, zw, zcap, max_iter):
     t12 = tau(a12, b12, c12, T)
     t21 = tau(a21, b21, c21, T)
 
-    G12 = np.exp(-a12 * t12)
-    G21 = np.exp(-a21 * t21)
+    G12 = np.exp(-.3 * t12)
+    G21 = np.exp(-.3 * t21)
 
     A1 = 7.3649e1
     A2 = 7.4172e1
@@ -125,7 +125,7 @@ def Thermo_EquilB(T, P, F, zw, zcap, max_iter):
 
         if err < 1e-8:
             L = F - V
-            return V, L, F, xw, xcap, yw, ycap, g1_guess, g2_guess
+            return V, L, F, xw, xcap, yw, ycap, g1_guess, g2_guess, t12, t21
         x_old = xw
 
     L = F - V
