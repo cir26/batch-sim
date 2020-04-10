@@ -9,13 +9,13 @@ from scipy.integrate import odeint
 from scipy.optimize import curve_fit
 import numpy as np
 import matplotlib.pyplot as plt
-from Kinetics import dif_rxn, kinetic_const, rxn, rxn_BT
+from Kinetics import dif_rxn
 from Calculations import attr_calc
 
 
 class Polymerization:
 
-    #g/mol
+    # g/mol
     molar_masses = np.array([18.01528,  # W
                     113.159,  # CL
                     226.318,  # CD
@@ -32,13 +32,13 @@ class Polymerization:
         N=End_Time*10*3600
         if ideal == True:
             state, time, self.T = self.reaction_l(Temperature, Initial_Charge, End_Time, N)
-            state_moles = np.asarray(state) # moles of species
+            state_moles = np.asarray(state)  # moles of species
             if units == 'kg':
-                self.molar_masses = np.divide(self.molar_masses, 1000)
-                state = state_moles*self.molar_masses
+                self.molar_masses = np.divide(self.molar_masses, 1000)  # kg/mol
+                state = state_moles*self.molar_masses  # kg of species
             if units == 'lbs':
-                self.molar_masses = np.divide(self.molar_masses, 453.592)
-                state = state_moles*self.molar_masses
+                self.molar_masses = np.divide(self.molar_masses, 453.592)  # lbs/mol
+                state = state_moles*self.molar_masses  # lbs of species
             # perform addition and calculation of important data attributes to Polymerization object
             self = attr_calc(self, state_arr=state, time_arr=time)
 
@@ -53,10 +53,10 @@ class Polymerization:
             state_moles = np.asarray(state)  # moles of species
             if units == 'kg':
                 self.molar_masses = np.divide(self.molar_masses, 1000)
-                state = state_moles * self.molar_masses
+                state = state_moles * self.molar_masses  # kg of species
             if units == 'lbs':
                 self.molar_masses = np.divide(self.molar_masses, 453.592)
-                state = state_moles * self.molar_masses
+                state = state_moles * self.molar_masses  # lbs of species
             # perform addition and calculation of important data attributes to Polymerization object
             self = attr_calc(self, state_arr=state, time_arr=time)
 
@@ -106,7 +106,7 @@ class Polymerization:
     def reaction_BT(self, pars, initial_charge, end_t, incr, Pres, max_iter):
         t = np.linspace(0, end_t*3600, incr)
         total_mass = sum(initial_charge[:-2])
-        initial_conc = [initial_charge[i] * 1000 / self.molar_masses[i] / total_mass for i in range(len(initial_charge)-2)]
+        initial_conc = [initial_charge[i] * 1000 / self.molar_masses[i] / total_mass for i in range(len(initial_charge)-2)]  # mol species / kg total mixture
         initial_conc.append(initial_charge[11])
         initial_conc.append(initial_charge[12])
 
@@ -135,25 +135,26 @@ class Polymerization:
 
         return moles, t, T,P
 
+
 # test simulation
 # set initial charges in kg
-state_dict={'W':13, # input mass in kg
-            'CL':750,
-            'CD':0,
-            'AA':1e-5,
-            'P1':0,
-            'BACA':0,
-            'TN':0,
-            'TC':0,
-            'TA':0,
-            'CHA':0,
-            'TCHA':0,
-            'Temp':273.15+90,
-            'Press':5*101325}
-units='kg' # convert final units
-state = [i for i in state_dict.values()] # extract initial conditions for input
-Poly = Polymerization([273.15+255, 1.4e-6], state, 24, ideal=False, P=1*101325, units=units)
-Poly2 = Polymerization([273.15+255, 1.4e-6], state, 24, ideal=True, units=units)
+state_dict = {'W': 13,
+              'CL':750,
+              'CD':0,
+              'AA':1e-5,
+              'P1':0,
+              'BACA':0,
+              'TN':0,
+              'TC':0,
+              'TA':0,
+              'CHA':0,
+              'TCHA':0,
+              'Temp':273.15+90,
+              'Press':5*101325}
+units = 'kg' # convert final units
+init_cond = [i for i in state_dict.values()] # extract initial conditions for input
+Poly = Polymerization([273.15+255, 1.4e-6], init_cond, 24, ideal=False, P=1*101325, units=units)
+Poly2 = Polymerization([273.15+255, 1.4e-6], init_cond, 24, ideal=True, units=units)
 
 #plots
 fig = plt.figure()

@@ -135,8 +135,8 @@ def Thermo_EquilB(T, P, F, zw, zcap, max_iter):
 V, L, F, xw, xcap, yw, ycap, g1, g2 = Thermo_EquilB(475, 60000, 1, .5, .5, 100)
 print('V: ', V)
 print('L: ', L)
-print('X Water: ', xw)
-print('X Cap: ', xcap)
-print('Yw: ', yw)
+print('X Water: ', xw) liquid
+print('X Cap: ', xcap) 
+print('Yw: ', yw) vapor
 print('Ycap: ', ycap)
 '''

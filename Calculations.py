@@ -3,6 +3,17 @@ import numpy as np
 # function to perform addition and calculation of important data attributes to Polymerization object
 def attr_calc(self, state_arr, time_arr):
     # set species mass data as object attributes
+    # W = [0]
+    # CL = [1]
+    # CD = [2]
+    # AA = [3]
+    # P1 = [4]
+    # BACA =[5]
+    # TN = [6]
+    # TCO = [7]
+    # TA = [8]
+    # CHA = [9]
+    # TCHA = [10]
     self.t = np.divide(time_arr, 3600)
     self.W = state_arr[:, 0]
     self.CL = state_arr[:, 1]
@@ -18,19 +29,7 @@ def attr_calc(self, state_arr, time_arr):
     # calculate number-average degree of polymerization
     num = np.add(np.add(np.add(self.BACA, self.TN), self.TCO), self.P1)
     denom = np.add(self.TCO, self.P1)
-    #denom = self.TCO
     self.DP = np.divide(num, denom)
-            #W = [0]
-            #CL = [1]
-            #CD = [2]
-            #AA = [3]
-            #P1 = [4]
-            #BACA =[5]
-            #TN = [6]
-            #TCO = [7]
-            #TA = [8]
-            #CHA = [9]
-            #TCHA = [10]
     # calculate weight-average molecular weight of polymer (N6)
     num = np.add(np.add(np.add(np.add(np.add(self.molar_masses[6]**2 * self.TN,
                                              self.molar_masses[7]**2 * self.TCO),
