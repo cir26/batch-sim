@@ -1,19 +1,15 @@
 import numpy as np
+import pickle
 from Thermo import Thermo_EquilB
-
 
 
 def dif_rxn(condition, max_T, T_rate, t, P_rate=0, min_P=None, P_delay=0, term_delay=0): # returns list of reaction interaction differential equation for each species
 	T = condition[11]
-	if min_P is None:
-		pass
-	else:
-		P = condition[12]
 	k, K = kinetic_const(T, condition[7])
-
 	if min_P is None:
 		Reactions = rxn(condition, k, K)
 	else:
+		P = condition[12]
 		Reactions = rxn(condition, k, K, T, P, ideal=False, max_iter=100)
 
 	R1 = Reactions[0]
@@ -37,22 +33,23 @@ def dif_rxn(condition, max_T, T_rate, t, P_rate=0, min_P=None, P_delay=0, term_d
 			return 1
 		else:
 			return 0
+
 	dW = R2 + R3 + R4 + R5 + R11 + R12 - (R1 + R8)
 	dCL = -(R1 + R6 + R7)
 	dCD = -(R8 + R9 + R10)
-	dAA = -(R11 + R12)*forcing(t,term_delay)
+	dAA = -(R11 + R12)*forcing(t, term_delay)
 	dP1 = R1 - (2*R2 + R3 + R4 + R6 + R9 + R11)
 	dBACA = R3 + R4 + 2*R5 + R7 + R9 + 2*R10 + R12
 	dTN = R2 + R6 + R8 + R9 - (R5 + R12)
 	dTC = R2 + R6 + R8 + R9 + R11 - R5
-	dTA = R11 + R12*forcing(t,term_delay)
+	dTA = R11 + R12*forcing(t, term_delay)
 	dCHA = -(R13 + R14 + R15)
 	dTCHA = R13 + R14 + R15
 	dT = T_rate*T*(max_T-T)
-	if min_P==None:
+	if min_P is None:
 		return [dW, dCL, dCD, dAA, dP1, dBACA, dTN, dTC, dTA, dCHA, dTCHA, dT]
 	else:
-		dP = P_rate * P * (1 - (P / min_P))*forcing(t,P_delay)
+		dP = P_rate * P * (1 - (P / min_P))*forcing(t, P_delay)
 		return [dW, dCL, dCD, dAA, dP1, dBACA, dTN, dTC, dTA, dCHA, dTCHA, dT, dP]
 
 
@@ -70,24 +67,37 @@ def kinetic_const(T, TC): # returns list of forward rxn constant, and list of re
 		e0 = rxn_const[flag][1]
 		ac = rxn_const[flag][2]
 		ec = rxn_const[flag][3]
-		
+
 		return a0*np.exp(-e0/R/T)+ac*np.exp(-ec/R/T)*TC
-		
+
 	def K_func(T, R, rxn_const, flag):
-		
+
 		H = rxn_const[flag][4]
 		S = rxn_const[flag][5]
-		
+
 		return np.exp((S-H/T)/R)
 
 	R = 8.314
-	
+
 	lil_k = []
 	K = []
 	for i in range(1,6):
 		lil_k.append(k_func(T, R, TC, rxn_const, i))
 		K.append(K_func(T, R, rxn_const, i))
 	return lil_k, K
+
+
+def store_data(filename, data):
+	# save
+	with open(filename, 'wb') as file:
+		pickle.dump(data, file)
+
+
+def load_data(filename):
+	# load
+	with open(filename, 'rb') as file:
+		data = pickle.load(file)
+	return data
 
 
 def rxn(conc, k, K, T=None, P=None, ideal=True, max_iter=None):
@@ -103,7 +113,7 @@ def rxn(conc, k, K, T=None, P=None, ideal=True, max_iter=None):
 	K4 = K[3]
 	K5 = K[4]
 
-	for i in range(len(conc)):
+	for i in range(len(conc)-2):
 		if conc[i] < 0:
 			conc[i] = 0
 		else:
@@ -123,21 +133,23 @@ def rxn(conc, k, K, T=None, P=None, ideal=True, max_iter=None):
 	TCHA = conc[10]
 
 	if ideal is True:
-		yw = [0]
-		ycap = [0]
-		V = [0]
-		xw = [W / (W + CL)]
-		xcap = [CL / (W + CL)]
-		L = [W + CL]
+		yw = 0
+		ycap = 0
+		V = 0
+		xw = W / (W + CL)
+		xcap = CL / (W + CL)
+		L = W + CL
+		t12 = 0
+		t21 = 0
+
 	else:
 		zw = W / (W + CL)
 		zcap = CL / (W + CL)
 		F = W + CL  # FEED
 		# Adjust Water and Caprolactam Concentrations with NRTL
-		V, L, F, xw, xcap, yw, ycap, g1, g2, _, _ = Thermo_EquilB(T, P, F, zw, zcap, max_iter)
+		V, L, F, xw, xcap, yw, ycap, g1, g2, t12, t21 = Thermo_EquilB(T, P, F, zw, zcap, max_iter)
 		W = L[0] * xw[0]
 		CL = L[0] * xcap[0]
-
 
 
 	def R_1(CL, W, P1, k1, K1):
@@ -256,8 +268,6 @@ def rxn(conc, k, K, T=None, P=None, ideal=True, max_iter=None):
 
 	return [R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15]
 
-def main():
-	pass
 
 
 

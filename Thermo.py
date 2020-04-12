@@ -97,7 +97,6 @@ def Thermo_EquilB(T, P, F, zw, zcap, max_iter):
     guess_K2 = ps2 * g2_guess / P
 
     x_old = 1
-    i = 0
     for i in range(max_iter):
 
         V, _, ier, _ = fsolve(VF_Ratio, 0.25, args=(zw, zcap, guess_K1, guess_K2, F), full_output=1)
