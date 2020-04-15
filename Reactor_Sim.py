@@ -176,10 +176,13 @@ class Polymerization:
 #######################################################################################################################
 # test simulation
 # set initial charges in kg
-state_dict = {'W': 13,
-              'CL':750,
+cap=400
+aa= (2/3)*0.0001*cap
+w=0.01*cap
+state_dict = {'W':w,
+              'CL':cap,
               'CD':0,
-              'AA':1e-5,
+              'AA':aa,
               'P1':0,
               'BACA':0,
               'TN':0,
@@ -189,6 +192,7 @@ state_dict = {'W': 13,
               'TCHA':0,
               'Temp':273.15+90,
               'Press':5*101325}
+
 units = 'kg'  # convert final units
 init_cond = [i for i in state_dict.values()]  # extract initial conditions for input
 Poly = Polymerization(273.15+255, init_cond, 12, ideal=False, P=1*101325, units=units)
@@ -207,16 +211,36 @@ ax1.xaxis.set_ticks_position('both')
 ax1.tick_params(direction="in")
 ax1.legend()
 ax1.set_xlabel('Time (hours)')
+ax1.set_ylabel('Volume (m^3)')
 ax1.set_xlim([0, 12])
 plt.show()
 
 
-#ax1.plot(Poly2.t, Poly2.MWW, 'k', label='Ideal Nylon-6 MWW (kg/mol)')
-#ax1.plot(Poly.t, Poly.MWN, 'g', alpha = 0.85, linestyle='dashdot', label='NRTL Binary Nylon-6 MWN (kg/mol)')
-#ax1.plot(Poly2.t, Poly2.MWN, 'g', label='Ideal Nylon-6 MWN (kg/mol)')
+
+
+fig = plt.figure()
+ax1 = fig.add_subplot(111)
+ax1.plot(Poly.T-273.15, Poly.t12, 'k', alpha=0.44, linestyle='dashdot', label='tau (W-CL)')
+ax1.plot(Poly.T-273.15, Poly.t21, 'k', alpha=0.88, linestyle='dashdot', label='tau (CL-W)')
+ax1.plot([0,300],[0,0], 'k', lw=0.5, linestyle='solid')
+ax1.minorticks_on()
+ax1.tick_params(axis='x', which='minor', direction='in')
+ax1.tick_params(axis='y', which='minor', direction='in')
+ax1.yaxis.set_ticks_position('both')
+ax1.xaxis.set_ticks_position('both')
+ax1.tick_params(direction="in")
+ax1.legend()
+ax1.set_ylabel('POLYNRTL Tau values')
+ax1.set_xlabel('Temperature (deg C)')
+ax1.set_xlim([0, 300])
+ax1.set_ylim([-0.1,0.08])
+plt.show()
+
+
+
+
 #ax2.plot(Poly.t, Poly.FAV, 'r', alpha = 0.85, linestyle='dashdot', label='NRTL Binary Nylon-6 FAV')
 #ax2.plot(Poly2.t, Poly2.FAV, 'r', label='Ideal Nylon-6 FAV')
-#ax1.plot(Poly.t, Poly.T,'r',label='Temperature (K)')
 #ax1.plot(Poly2.t, Poly2.TCO, 'k', label='Ideal Nylon-6 ({})'.format(units))
 #ax1.plot(Poly.t, Poly.BACA, 'k', alpha = 0.85, linestyle='dashdot', label='NRTL Binary Nylon-6 ({})'.format(units))
 #ax1.plot(Poly2.t, Poly2.BACA, 'k', label='Ideal Nylon-6 ({})'.format(units))
@@ -227,7 +251,8 @@ plt.show()
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
 ax1.plot(Poly.t, Poly.VV, 'k', alpha=0.85, linestyle='dashdot', label='Vapor volume of binary mixture (m^3)')
-ax1.plot(Poly.t, Poly.P,'b',label='Pressure (atm e-1)')
+ax1.plot(Poly.t, Poly.P, 'b',label='Pressure (atm e-1)')
+#ax1.plot(Poly.t, Poly.T,'r',label='Temperature (K)')
 ax1.minorticks_on()
 ax1.tick_params(axis='x', which='minor', direction='in')
 ax1.tick_params(axis='y', which='minor', direction='in')
@@ -256,6 +281,7 @@ ax1.xaxis.set_ticks_position('both')
 ax1.tick_params(direction="in")
 ax1.legend()
 ax1.set_xlabel('Time (hours)')
+ax1.set_ylabel('Molecular weight (kg/mol)')
 ax1.set_xlim([1,12])
 ax1.set_ylim([0,50])
 plt.show()
@@ -273,7 +299,7 @@ ax1.xaxis.set_ticks_position('both')
 ax1.tick_params(direction="in")
 lines = ax1.get_lines()
 ax1.set_xlabel('Time (hours)')
-ax1.set_ylabel('Nylon & Caprolactam (kg)', color='k')
+ax1.set_ylabel('Nylon & Caprolactam mass (kg)', color='k')
 ax1.set_xlim([0,12])
 
 ax2 = ax1.twinx()  # instantiate a second axes that shares the same x-axis
@@ -283,7 +309,7 @@ lines += ax2.get_lines()
 ax2.add_artist(plt.legend([lines[i] for i in [0,1,2,3]],['Nylon-6 (kg)','Caprolactam (kg)','Water (kg)','Cyclic Dimer (kg)'],loc=1))
 ax2.tick_params(axis='y', labelcolor='k')
 ax2.set_ylim([0,20])
-ax2.set_ylabel('Water & Cyclic Dimer (kg)', color='k')
+ax2.set_ylabel('Water & Cyclic Dimer mass (kg)', color='k')
 plt.title('NRTL Binary Model')
 fig.tight_layout()
 

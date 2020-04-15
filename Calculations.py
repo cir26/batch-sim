@@ -30,6 +30,9 @@ def attr_calc(self, state_arr, time_arr, ideal=True):
     self.CHA_m = self.state_moles[:, 9]
     self.TCHA_m = self.state_moles[:, 10]
 
+    # enthalpy calculations
+
+
     if ideal is False:
         # phase equilibrium constants
         const = {'A_w':5.459,
