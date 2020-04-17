@@ -6,7 +6,7 @@ Created on Thu Oct 10 18:05:49 2019
 """
 #%% Class Import and Run
 from scipy.integrate import odeint
-import pickle
+#import pickle
 import numpy as np
 import matplotlib.pyplot as plt
 from Kinetics import dif_rxn
@@ -199,8 +199,9 @@ Poly = Polymerization(273.15+255, init_cond, 10, ideal=False, P=1*101325, units=
 
 
 Poly.Enthalpy[114]=(Poly.Enthalpy[113]+Poly.Enthalpy[115])/2  # fixing anamoly
-Poly.steam_mass[114]=(Poly.steam_mass[113]+Poly.steam_mass[115])/2  # fixing anamoly
+Poly.heat_mass[114]=(Poly.heat_mass[113]+Poly.heat_mass[115])/2  # fixing anamoly
 Poly.coolingW_mass[114]=(Poly.coolingW_mass[113]+Poly.coolingW_mass[115])/2  # fixing anamoly
+
 #plots
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
@@ -212,6 +213,7 @@ ax1.tick_params(axis='y', which='minor', direction='in')
 ax1.yaxis.set_ticks_position('both')
 ax1.xaxis.set_ticks_position('both')
 ax1.tick_params(direction="in")
+ax1.ticklabel_format(axis='y',style='sci',scilimits=(5,5))
 ax1.legend()
 ax1.set_xlabel('Time (hours)')
 ax1.set_ylabel('Energy (kJ)')
@@ -221,7 +223,7 @@ plt.show()
 
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
-ax1.plot(Poly.t[:3452], Poly.Enthalpy[:3452]/1000, 'k', alpha=0.85, linestyle='dashdot', label='$\mathregular{\Delta}$ Enthalpy')
+ax1.plot(Poly.t[:3444], Poly.Enthalpy[:3444]/1000, 'k', alpha=0.85, linestyle='dashdot', label='$\mathregular{\Delta}$ Enthalpy')
 ax1.minorticks_on()
 ax1.tick_params(axis='x', which='minor', direction='in')
 ax1.tick_params(axis='y', which='minor', direction='in')
@@ -236,7 +238,7 @@ ax1.set_xlim([0, 1])
 ax2 = ax1.twinx()  # instantiate a second axes that shares the same x-axis
 ax2.plot(Poly.t, Poly.T-273.15, 'darkred', alpha=0.85, linestyle='solid', label='Temperature (deg C)')
 lines += ax2.get_lines()
-ax2.add_artist(plt.legend([lines[i] for i in [0, 1]], ['$\mathregular{\Delta}$ Enthalpy', 'Temperature (deg C)'], loc=2))
+ax2.add_artist(plt.legend([lines[i] for i in [0, 1]], ['$\mathregular{\Delta}$ Enthalpy', 'Temperature (deg C)'], loc=1))
 ax2.tick_params(axis='y', labelcolor='darkred')
 ax2.minorticks_on()
 ax2.set_ylabel('Temperature (deg C)', color='darkred', rotation=-90, labelpad=15)
@@ -244,11 +246,11 @@ ax2.set_ylim([0, 350])
 fig.tight_layout()
 plt.show()
 
-
-R=0.082057  # L atm / K mol
+heat_density = 687  # kg/m^3
+steam = ((Poly.heat_mass/heat_density)*264.172)  # gal
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
-ax1.plot(Poly.t[:3452], ((Poly.steam_mass/18.01528)*(185.556+273.15)/(150/14.7))*0.264172, 'k', alpha=0.85, linestyle='dashdot', label="Sat'd steam @ 150 psig")
+ax1.plot(Poly.t[:3444], steam, 'k', alpha=0.85, linestyle='dashdot', label="Therminol XP heating oil @ 304 deg C")
 ax1.minorticks_on()
 ax1.tick_params(axis='x', which='minor', direction='in')
 ax1.tick_params(axis='y', which='minor', direction='in')
@@ -265,14 +267,14 @@ plt.show()
 
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
-ax1.plot(Poly.t[3452:-1], Poly.coolingW_mass*0.264172, 'k', alpha=0.85, linestyle='dashdot', label="Cooling water @ 25 deg C")
+ax1.plot(Poly.t[3444:-1], Poly.coolingW_mass*0.264172, 'k', alpha=0.85, linestyle='dashdot', label="Cooling water @ 4 deg C")
 ax1.minorticks_on()
 ax1.tick_params(axis='x', which='minor', direction='in')
 ax1.tick_params(axis='y', which='minor', direction='in')
 ax1.yaxis.set_ticks_position('both')
 ax1.xaxis.set_ticks_position('both')
 ax1.tick_params(direction="in")
-ax1.ticklabel_format(axis='y',style='sci',scilimits=(3,3))
+ax1.ticklabel_format(axis='y',style='sci',scilimits=(2,2))
 ax1.legend()
 ax1.set_xlabel('Time (hours)')
 ax1.set_ylabel('Volumetric flow rate (gal/sec)')
