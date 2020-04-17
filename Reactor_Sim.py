@@ -16,7 +16,6 @@ from time import time
 
 
 class Polymerization:
-    count=0
     # g/mol
     molar_masses = np.array([18.01528,  # W
                     113.159,  # CL
@@ -176,7 +175,7 @@ class Polymerization:
 #######################################################################################################################
 # test simulation
 # set initial charges in kg
-cap=400
+cap=1500
 aa= (2/3)*0.0001*cap
 w=0.01*cap
 state_dict = {'W':w,
@@ -195,14 +194,18 @@ state_dict = {'W':w,
 
 units = 'kg'  # convert final units
 init_cond = [i for i in state_dict.values()]  # extract initial conditions for input
-Poly = Polymerization(273.15+255, init_cond, 12, ideal=False, P=1*101325, units=units)
+Poly = Polymerization(273.15+255, init_cond, 10, ideal=False, P=1*101325, units=units)
 #Poly2 = Polymerization(273.15+255, init_cond, 12, ideal=True, units=units)
 
+
+Poly.Enthalpy[114]=(Poly.Enthalpy[113]+Poly.Enthalpy[115])/2  # fixing anamoly
+Poly.steam_mass[114]=(Poly.steam_mass[113]+Poly.steam_mass[115])/2  # fixing anamoly
+Poly.coolingW_mass[114]=(Poly.coolingW_mass[113]+Poly.coolingW_mass[115])/2  # fixing anamoly
 #plots
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
-ax1.plot(Poly.t, Poly.LV, 'k', alpha=0.45, linestyle='dashdot', label='Liquid volume of binary mixture (m^3)')
-ax1.plot(Poly.t, Poly.LV+(Poly.Nylon/1140), 'k', alpha=0.85, linestyle='dashdot', label='Liquid+Nylon volume of binary mixture (m^3)')
+ax1.plot(Poly.t[:-1], Poly.Enthalpy/1000, 'k', alpha=0.85, linestyle='dashdot', label='$\mathregular{\Delta}$ Enthalpy')
+#ax1.plot(Poly.t, Poly.H_r/1000, 'k', alpha=0.4, linestyle='dashdot', label='$\mathregular{\Delta}$ Heat of Reaction')
 ax1.minorticks_on()
 ax1.tick_params(axis='x', which='minor', direction='in')
 ax1.tick_params(axis='y', which='minor', direction='in')
@@ -211,8 +214,112 @@ ax1.xaxis.set_ticks_position('both')
 ax1.tick_params(direction="in")
 ax1.legend()
 ax1.set_xlabel('Time (hours)')
-ax1.set_ylabel('Volume (m^3)')
-ax1.set_xlim([0, 12])
+ax1.set_ylabel('Energy (kJ)')
+ax1.set_xlim([0, 10])
+plt.show()
+
+
+fig = plt.figure()
+ax1 = fig.add_subplot(111)
+ax1.plot(Poly.t[:3452], Poly.Enthalpy[:3452]/1000, 'k', alpha=0.85, linestyle='dashdot', label='$\mathregular{\Delta}$ Enthalpy')
+ax1.minorticks_on()
+ax1.tick_params(axis='x', which='minor', direction='in')
+ax1.tick_params(axis='y', which='minor', direction='in')
+ax1.yaxis.set_ticks_position('both')
+ax1.xaxis.set_ticks_position('both')
+ax1.tick_params(direction="in")
+lines = ax1.get_lines()
+ax1.set_xlabel('Time (hours)')
+ax1.set_ylabel('Energy (kJ)')
+ax1.set_xlim([0, 1])
+
+ax2 = ax1.twinx()  # instantiate a second axes that shares the same x-axis
+ax2.plot(Poly.t, Poly.T-273.15, 'darkred', alpha=0.85, linestyle='solid', label='Temperature (deg C)')
+lines += ax2.get_lines()
+ax2.add_artist(plt.legend([lines[i] for i in [0, 1]], ['$\mathregular{\Delta}$ Enthalpy', 'Temperature (deg C)'], loc=2))
+ax2.tick_params(axis='y', labelcolor='darkred')
+ax2.minorticks_on()
+ax2.set_ylabel('Temperature (deg C)', color='darkred', rotation=-90, labelpad=15)
+ax2.set_ylim([0, 350])
+fig.tight_layout()
+plt.show()
+
+
+R=0.082057  # L atm / K mol
+fig = plt.figure()
+ax1 = fig.add_subplot(111)
+ax1.plot(Poly.t[:3452], ((Poly.steam_mass/18.01528)*(185.556+273.15)/(150/14.7))*0.264172, 'k', alpha=0.85, linestyle='dashdot', label="Sat'd steam @ 150 psig")
+ax1.minorticks_on()
+ax1.tick_params(axis='x', which='minor', direction='in')
+ax1.tick_params(axis='y', which='minor', direction='in')
+ax1.yaxis.set_ticks_position('both')
+ax1.xaxis.set_ticks_position('both')
+ax1.tick_params(direction="in")
+ax1.legend()
+ax1.set_xlabel('Time (hours)')
+ax1.set_ylabel('Volumetric flow rate (gal/sec)')
+ax1.set_xlim([0, 1])
+plt.show()
+
+
+
+fig = plt.figure()
+ax1 = fig.add_subplot(111)
+ax1.plot(Poly.t[3452:-1], Poly.coolingW_mass*0.264172, 'k', alpha=0.85, linestyle='dashdot', label="Cooling water @ 25 deg C")
+ax1.minorticks_on()
+ax1.tick_params(axis='x', which='minor', direction='in')
+ax1.tick_params(axis='y', which='minor', direction='in')
+ax1.yaxis.set_ticks_position('both')
+ax1.xaxis.set_ticks_position('both')
+ax1.tick_params(direction="in")
+ax1.ticklabel_format(axis='y',style='sci',scilimits=(3,3))
+ax1.legend()
+ax1.set_xlabel('Time (hours)')
+ax1.set_ylabel('Volumetric flow rate (gal/sec)')
+ax1.set_xlim([1, 10])
+plt.show()
+
+
+
+'''
+#plots
+fig = plt.figure()
+ax1 = fig.add_subplot(111)
+ax1.plot(Poly.t[:-1], Poly.term1/1000, 'k', alpha=0.85, linestyle='dashdot', label='term1')
+ax1.plot(Poly.t[:-1], Poly.term2/1000, 'r', alpha=0.85, linestyle='dashdot', label='term2')
+ax1.plot(Poly.t[:-1], Poly.term3/1000, 'b', alpha=0.85, linestyle='dashdot', label='term3')
+ax1.plot(Poly.t[:-1], Poly.term4/1000, 'g', alpha=0.85, linestyle='dashdot', label='term4')
+ax1.plot(Poly.t[:-1], Poly.term5/1000, 'k', alpha=0.45, linestyle='dashdot', label='term5')
+ax1.plot(Poly.t[:-1], Poly.term6/1000, 'orange', alpha=0.85, linestyle='dashdot', label='term6')
+
+ax1.minorticks_on()
+ax1.tick_params(axis='x', which='minor', direction='in')
+ax1.tick_params(axis='y', which='minor', direction='in')
+ax1.yaxis.set_ticks_position('both')
+ax1.xaxis.set_ticks_position('both')
+ax1.tick_params(direction="in")
+ax1.legend()
+ax1.set_xlabel('Time (hours)')
+ax1.set_ylabel('Energy (kJ)')
+ax1.set_xlim([0, 10])
+plt.show()
+'''
+
+
+fig = plt.figure()
+ax1 = fig.add_subplot(111)
+ax1.plot(Poly.t, Poly.LV, 'k', alpha=0.45, linestyle='dashdot', label='Liquid volume of binary mixture')
+ax1.plot(Poly.t, Poly.LV+(Poly.Nylon/1140), 'k', alpha=0.85, linestyle='dashdot', label='Liquid+Nylon volume of binary mixture')
+ax1.minorticks_on()
+ax1.tick_params(axis='x', which='minor', direction='in')
+ax1.tick_params(axis='y', which='minor', direction='in')
+ax1.yaxis.set_ticks_position('both')
+ax1.xaxis.set_ticks_position('both')
+ax1.tick_params(direction="in")
+ax1.legend()
+ax1.set_xlabel('Time (hours)')
+ax1.set_ylabel('Volume ($\mathregular{m^3}$)')
+ax1.set_xlim([0, 10])
 plt.show()
 
 
@@ -250,40 +357,52 @@ plt.show()
 # ax1.plot(Poly2.t, Poly2.P1, 'b', label='Ideal Nylon-6 ({})'.format(units))
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
-ax1.plot(Poly.t, Poly.VV, 'k', alpha=0.85, linestyle='dashdot', label='Vapor volume of binary mixture (m^3)')
+ax1.plot(Poly.t, Poly.VV, 'k', alpha=0.75, linestyle='dashdot', label='Vapor volume of binary mixture $\mathregular{m^3}$')
 ax1.plot(Poly.t, Poly.P, 'b',label='Pressure (atm e-1)')
-#ax1.plot(Poly.t, Poly.T,'r',label='Temperature (K)')
 ax1.minorticks_on()
 ax1.tick_params(axis='x', which='minor', direction='in')
 ax1.tick_params(axis='y', which='minor', direction='in')
 ax1.yaxis.set_ticks_position('both')
 ax1.xaxis.set_ticks_position('both')
 ax1.tick_params(direction="in")
-ax1.legend()
+lines = ax1.get_lines()
 ax1.set_xlabel('Time (hours)')
-ax1.set_xlim([0, 12])
+ax1.set_xlim([0, 10])
+ax1.set_ylim([0, 100])
+
+ax2 = ax1.twinx()  # instantiate a second axes that shares the same x-axis
+ax2.plot(Poly.t, Poly.T-273.15, 'darkred', alpha=0.85, linestyle='solid', label='Temperature (deg C)')
+lines += ax2.get_lines()
+ax2.add_artist(plt.legend([lines[i] for i in [0, 1, 2]], ['Vapor volume of binary mixture ($\mathregular{m^3}$)', 'Pressure (atm $\cdot\mathregular{10^{-1}}$)', 'Temperature (deg C)'], loc=2))
+ax2.tick_params(axis='y', labelcolor='darkred')
+ax2.minorticks_on()
+ax2.set_ylabel('Temperature (deg C)', color='darkred', rotation=-90, labelpad=15)
+ax2.set_ylim([0, 350])
+fig.tight_layout()
+
 plt.show()
 
 
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
-ax1.plot(Poly.t, Poly.MWW, 'k', alpha = 0.85, linestyle='dashdot', label='NRTL Binary Nylon-6 MW-W (kg/mol)')
-ax1.plot(Poly.t, Poly.MWW2, 'r', alpha = 0.85, linestyle='dashdot', label='NRTL Binary Nylon-6 MW-W-2 (kg/mol)')
-ax1.plot(Poly.t, Poly.MWZ, 'k', alpha = 0.5, linestyle='dashdot', label='NRTL Binary Nylon-6 MW-Z (kg/mol)')
-ax1.plot(Poly.t, Poly.MWZ2, 'r', alpha = 0.5, linestyle='dashdot', label='NRTL Binary Nylon-6 MW-Z-2 (kg/mol)')
-ax1.plot(Poly.t, Poly.MWN, 'k', alpha = 0.25, linestyle='dashdot', label='NRTL Binary Nylon-6 MW-N (kg/mol)')
-ax1.plot(Poly.t, Poly.MWN2, 'r', alpha = 0.25, linestyle='dashdot', label='NRTL Binary Nylon-6 MW-N-2 (kg/mol)')
+ax1.plot(Poly.t, Poly.MWW, 'r', alpha = 0.85, linestyle='dashdot', label='Nylon-6 MW-Weight Average (kg/mol)')
+#ax1.plot(Poly.t, Poly.MWW2, 'r', alpha = 0.85, linestyle='dashdot', label='NRTL Binary Nylon-6 MW-W-2 (kg/mol)')
+ax1.plot(Poly.t, Poly.MWZ, 'k', alpha = 0.65, linestyle='dashdot', label='Nylon-6 MW-Z Average (kg/mol)')
+#ax1.plot(Poly.t, Poly.MWZ2, 'r', alpha = 0.5, linestyle='dashdot', label='NRTL Binary Nylon-6 MW-Z-2 (kg/mol)')
+ax1.plot(Poly.t, Poly.MWN, 'k', alpha = 0.3, linestyle='dashdot', label='Nylon-6 MW-Number Average (kg/mol)')
+#ax1.plot(Poly.t, Poly.MWN2, 'r', alpha = 0.25, linestyle='dashdot', label='NRTL Binary Nylon-6 MW-N-2 (kg/mol)')
 ax1.minorticks_on()
 ax1.tick_params(axis='x', which='minor', direction='in')
 ax1.tick_params(axis='y', which='minor', direction='in')
 ax1.yaxis.set_ticks_position('both')
+#ax1.yaxis.set_label_position("right")
 ax1.xaxis.set_ticks_position('both')
 ax1.tick_params(direction="in")
 ax1.legend()
 ax1.set_xlabel('Time (hours)')
 ax1.set_ylabel('Molecular weight (kg/mol)')
-ax1.set_xlim([1,12])
-ax1.set_ylim([0,50])
+ax1.set_xlim([1,10])
+ax1.set_ylim([0,30])
 plt.show()
 
 
@@ -300,17 +419,18 @@ ax1.tick_params(direction="in")
 lines = ax1.get_lines()
 ax1.set_xlabel('Time (hours)')
 ax1.set_ylabel('Nylon & Caprolactam mass (kg)', color='k')
-ax1.set_xlim([0,12])
+ax1.set_xlim([0,10])
 
 ax2 = ax1.twinx()  # instantiate a second axes that shares the same x-axis
 ax2.plot(Poly.t, Poly.W, 'b', alpha=0.5, linestyle='dashdot', label='NRTL Binary Water (kg)')
-ax2.plot(Poly.t, Poly.CD+Poly.P1, 'r', alpha=0.85, linestyle='dashdot', label='NRTL Binary Cyclic Dimer (kg)')
+ax2.plot(Poly.t, Poly.CD, 'r', alpha=0.85, linestyle='dashdot', label='NRTL Binary Cyclic Dimer (kg)')
 lines += ax2.get_lines()
-ax2.add_artist(plt.legend([lines[i] for i in [0,1,2,3]],['Nylon-6 (kg)','Caprolactam (kg)','Water (kg)','Cyclic Dimer (kg)'],loc=1))
+ax2.add_artist(plt.legend([lines[i] for i in [0,1,2,3]],['Nylon-6','Caprolactam','Water','Cyclic Dimer'],loc=1))
 ax2.tick_params(axis='y', labelcolor='k')
+ax2.minorticks_on()
 ax2.set_ylim([0,20])
-ax2.set_ylabel('Water & Cyclic Dimer mass (kg)', color='k')
-plt.title('NRTL Binary Model')
-fig.tight_layout()
+ax2.set_ylabel('Water & Cyclic Dimer mass (kg)', color='k', rotation=-90, labelpad=15)
+plt.title('Nonrandom Two-Liquid (NRTL) Binary Model')
+#fig.tight_layout()
 
 plt.show()
