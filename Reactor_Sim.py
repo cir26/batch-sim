@@ -4,9 +4,7 @@ Created on Thu Oct 10 18:05:49 2019
 Edited through: Fri May 14:47:38 2020
 @author: Robert McMillin (mcmillinre3) and Cristian Romero (cir26)
 """
-#%% Class Import and Run
 from scipy.integrate import odeint
-#import pickle
 import numpy as np
 import matplotlib.pyplot as plt
 from Kinetics import dif_rxn
@@ -178,7 +176,7 @@ Poly = Polymerization(Temperature=273.15+255,
 # suggested plots
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
-ax1.plot(Poly.t[:-1], Poly.Enthalpy/1000, 'k', alpha=0.85, linestyle='dashdot', label='$\mathregular{\Delta}$ Enthalpy')
+ax1.plot(Poly.t[115:-1], Poly.Enthalpy[115:]/1000, 'k', alpha=0.85, linestyle='dashdot', label='$\mathregular{\Delta}$ Enthalpy')
 #ax1.plot(Poly.t, Poly.H_r/1000, 'k', alpha=0.4, linestyle='dashdot', label='$\mathregular{\Delta}$ Heat of Reaction')
 ax1.minorticks_on()
 ax1.tick_params(axis='x', which='minor', direction='in')
@@ -196,7 +194,7 @@ plt.show()
 
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
-ax1.plot(Poly.t[:3444], Poly.Enthalpy[:3444]/1000, 'k', alpha=0.85, linestyle='dashdot', label='$\mathregular{\Delta}$ Enthalpy')
+ax1.plot(Poly.t[115:3444], Poly.Enthalpy[115:3444]/1000, 'k', alpha=0.85, linestyle='dashdot', label='$\mathregular{\Delta}$ Enthalpy')
 ax1.minorticks_on()
 ax1.tick_params(axis='x', which='minor', direction='in')
 ax1.tick_params(axis='y', which='minor', direction='in')
@@ -222,10 +220,10 @@ fig.tight_layout()
 plt.show()
 
 heat_density = 687  # heat density of Therminol hot oil (kg/m^3)
-steam = ((Poly.heat_mass/heat_density)*264.172)  # gal
+oil = ((Poly.heat_mass/heat_density)*264.172)  # gal
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
-ax1.plot(Poly.t[:3444], steam, 'k', alpha=0.85, linestyle='dashdot', label="Therminol XP heating oil @ 304 deg C")
+ax1.plot(Poly.t[115:3444], oil[115:], 'k', alpha=0.85, linestyle='dashdot', label="Therminol XP heating oil @ 304 deg C")
 ax1.minorticks_on()
 ax1.tick_params(axis='x', which='minor', direction='in')
 ax1.tick_params(axis='y', which='minor', direction='in')
