@@ -368,3 +368,5 @@ ax2.set_ylabel('Water & Cyclic Dimer mass (kg)', color='k', rotation=-90, labelp
 plt.title('Nonrandom Two-Liquid (NRTL) Binary Model')
 
 plt.show()
+
+
