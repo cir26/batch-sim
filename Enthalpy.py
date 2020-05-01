@@ -1,6 +1,6 @@
 import numpy as np
 
-
+# functions used for enthalpy calculations
 def heat_cap(x, cp):  # J/mol-k
     return np.sum([i*j for i,j in zip(x,cp)])
 

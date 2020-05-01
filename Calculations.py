@@ -152,16 +152,6 @@ def attr_calc(self, state_arr, time_arr, ideal=True):
         self.t12 = np.asarray(t12)
         self.t21 = np.asarray(t21)
         # phase equilibrium data
-        '''
-        self.t12 = np.asarray(load_data('t12'))
-        self.t21 = np.asarray(load_data('t21'))
-        self.xw = np.asarray(load_data('xw'))  # liquid mole fraction
-        self.xcap = np.asarray(load_data('xcap'))
-        self.yw = np.asarray(load_data('yw'))  # vapor mole fraction
-        self.ycap = np.asarray(load_data('ycap'))
-        self.L = np.asarray(load_data('L'))
-        self.V = np.asarray(load_data('V'))
-        '''
         # Liquid Molar Volume of mixture (m^3/mol)
         self.LMV = np.asarray(self.xw * (1/(const['A_w']/(const['B_w']**(1+(1-(self.T/const['C_w']))**const['D_w']))))/1000 + \
                    self.xcap * (1/(const['A_cap']/(const['B_cap']**(1+(1-(self.T/const['C_cap']))**const['D_cap']))))/1000)
@@ -262,12 +252,6 @@ def attr_calc(self, state_arr, time_arr, ideal=True):
 
         # calculate specific heat for Nylon (J/mol-K)
         self.cp_nylon = [mwn * (0.1526 * temp + 223.95) for temp,mwn in zip(self.T, self.MWN)]
-
-        # calculate vapor heat capacity (J/mol-K)
-        #self.cpv = [cl * x_cl + w * x_w for cl, x_cl, w, x_w in zip(self.cpv_CL, self.ycap, self.cpv_W, self.yw)]
-        # calculate liquid heat capacity (J/mol-K)
-        #self.cpl = [cl * x_cl + w * x_w for cl, x_cl, w, x_w in zip(self.cpl_CL, self.xcap, self.cpl_W, self.xw)]
-
         # calculate heat of vaporization for W (J/mol)
         self.heat_vap_W = (1/1000)*np.asarray([heat_vap(5.2053e7,3.199e-1,-2.12e-1,2.5795e-1,0,647,temp) for temp in self.T])
 
@@ -279,20 +263,6 @@ def attr_calc(self, state_arr, time_arr, ideal=True):
             4: [2.38e8, 1.76e5, 6.47e8, 1.57e5, -4.02e4, -60.79],
             5: [7.14e4, 8.92e4, 8.36e5, 8.54e4, -1.33e4, 2.439]
         }
-        '''
-        W = state[0]
-        CL = state[1]
-        CD = state[2]
-        AA = state[3]
-        P1 = state[4]
-        BACA = state[5]
-        TN = state[6]
-        TC = state[7]
-        TA = state[8]
-        CHA = state[9]
-        TCHA = state[10]
-        '''
-
 
         self.H_r = []
         H1 = 8.0287e3
@@ -322,28 +292,7 @@ def attr_calc(self, state_arr, time_arr, ideal=True):
             self.H_r.append(R1*H1 + H2*(R2 + R3 + R4 + R5 + R11 + R12 + R14 + R15) + H3*(R6 + R7 + R13) + H4*R8 + H5*(R9 + R10))
         self.H_r = np.asarray(self.H_r)  # J/(kg-s)
 
-        '''
-        self.term1=[]
-        self.term2 = []
-        self.term3 = []
-        self.term4 = []
-        self.term5 = []
-        self.term6 = []
-        for i in range(0, len(self.T) - 1):
-            self.term1.append(self.H_r[i] * total_mass/3600)
-            self.term2.append((self.T[i+1]-self.T[i]) * (self.Nylon_m[i] * self.cp_nylon[i]))
-            self.term3.append((self.T[i+1]-self.T[i]) * (self.CL_m[i] * self.cpv_CL[i] * self.ycap[i]))
-            self.term4.append((self.T[i+1]-self.T[i]) * (self.W_m[i] * self.cpv_W[i] * self.yw[i]))
-            self.term5.append((self.T[i+1]-self.T[i]) * (self.CL_m[i] * self.cpl_CL[i] * self.xcap[i]))
-            self.term6.append((self.T[i+1]-self.T[i]) * (self.W_m[i] * self.cpl_W[i] * self.xw[i]))
-        self.term1 = np.asarray(self.term1)
-        self.term2 = np.asarray(self.term2)
-        self.term2[np.isnan(self.term2)] = 0
-        self.term3 = np.asarray(self.term3)
-        self.term4 = np.asarray(self.term4)
-        self.term5 = np.asarray(self.term5)
-        self.term6 = np.asarray(self.term6)
-        '''
+        
         # calculate net system enthalpy (J)
         self.Enthalpy = np.asarray(
             [(self.H_r[i] * density_L[i] * self.LV[i]/36000) + (self.T[i+1]-self.T[i]) *
@@ -358,12 +307,10 @@ def attr_calc(self, state_arr, time_arr, ideal=True):
         for i in range(0, len(self.t)):
             if round(self.T[i],0) == round(100+273.15,0) and check == 0:
                 self.Enthalpy[i] += self.W_m[i] * self.heat_vap_W[i]
-                #print('time: ',self.t[i])
                 check += 1
-                print('Heat of Vaporization added')
+
         cp_w = (1/1000)*cp_l(cpl_const['W_A'], cpl_const['W_B'], cpl_const['W_C'], cpl_const['W_D'], cpl_const['W_E'], 4+273)  # j/mol-k
-        print('cp_w: ', cp_w)
-        #cp_steam = (1/1000)*cp_v(cpv_const['W_A'], cpv_const['W_B'], cpv_const['W_C'], cpv_const['W_D'], cpv_const['W_E'], 185.556+273)  # j/mol-k
+        # cp_steam = (1/1000)*cp_v(cpv_const['W_A'], cpv_const['W_B'], cpv_const['W_C'], cpv_const['W_D'], cpv_const['W_E'], 185.556+273)  # j/mol-k
         cp_oil = 2.97*1000 # j/kg-K @ 304 deg C
         coolingW_mass = []
         heat_mass = []  # Therminol XP

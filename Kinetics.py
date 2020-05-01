@@ -2,6 +2,7 @@ import numpy as np
 import pickle
 from Thermo import Thermo_EquilB
 
+# functions used for reaction kinetics calculations
 
 def dif_rxn(condition, max_T, T_rate, t, P_rate=0, min_P=None, P_delay=0, term_delay=0): # returns list of reaction interaction differential equation for each species
 	T = condition[11]

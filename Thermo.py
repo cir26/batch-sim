@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.optimize import fsolve
 
-
+# functions used for phase equilbira calculations
 def psat(A, B, C, D, E, T):
     return np.exp(A + B / T + C * np.log(T) + D * T ** E)
 
@@ -129,13 +129,3 @@ def Thermo_EquilB(T, P, F, zw, zcap, max_iter):
 
     L = F - V
     return V, L, F, xw, xcap, yw, ycap, g1_guess, g2_guess, t12, t21
-
-'''
-V, L, F, xw, xcap, yw, ycap, g1, g2 = Thermo_EquilB(475, 60000, 1, .5, .5, 100)
-print('V: ', V)
-print('L: ', L)
-print('X Water: ', xw) liquid
-print('X Cap: ', xcap) 
-print('Yw: ', yw) vapor
-print('Ycap: ', ycap)
-'''
