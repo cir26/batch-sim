@@ -1,7 +1,7 @@
 import numpy as np
-from Kinetics import load_data, rxn, kinetic_const
+from Kinetics import rxn, kinetic_const
 from Thermo import Thermo_EquilB
-from Enthalpy import heat_cap, cp_v, cp_l, heat_vap
+from Enthalpy import cp_v, cp_l, heat_vap
 
 # function to perform addition and calculation of important data attributes to Polymerization object
 def attr_calc(self, state_arr, time_arr, ideal=True):

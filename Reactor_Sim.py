@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 Created on Thu Oct 10 18:05:49 2019
-
-@author: macmc
+Edited through: Fri May 14:47:38 2020
+@author: Robert McMillin (mcmillinre3) and Cristian Romero (cir26)
 """
 #%% Class Import and Run
 from scipy.integrate import odeint
@@ -29,11 +29,11 @@ class Polymerization:
                     99.17, # CHA
                     98.17]) # TCHA
 
-    def __init__(self, Temperature, Initial_Charge, End_Time, ideal=True, P=None, units=None):
+    def __init__(self, Temperature, Initial_Cond, End_Time, ideal=True, P=None, units=None):
         dt = 1  # dt = .1 sec
         N = (End_Time*(1/dt)*3600) + 1  # starting at t=zero
         if ideal is True:
-            state, time, self.T = self.reaction_l(Temperature, Initial_Charge, End_Time, N)
+            state, time, self.T = self.reaction_l(Temperature, Initial_Cond, End_Time, N)
             self.state_moles = np.asarray(state)  # moles of species
             if units == 'kg':
                 self.molar_masses = np.divide(self.molar_masses, 1000)  # kg/mol
@@ -50,7 +50,7 @@ class Polymerization:
             else:
                 pass
 
-            state, time, self.T, self.P = self.reaction_BT(Temperature, Initial_Charge, End_Time, N, P)
+            state, time, self.T, self.P = self.reaction_BT(Temperature, Initial_Cond, End_Time, N, P)
             self.state_moles = np.asarray(state)  # moles of species
             if units == 'kg':
                 self.molar_masses = np.divide(self.molar_masses, 1000) # kg/mol
@@ -149,25 +149,25 @@ class Polymerization:
 cap = 1500
 cha = 0.0001*cap
 w = 0.01*cap
-state_dict = {'W':w,
-              'CL':cap,
-              'CD':0,
-              'AA':0,
-              'P1':0,
-              'BACA':0,
-              'TN':0,
-              'TC':0,
-              'TA':0,
-              'CHA':cha,
-              'TCHA':0,
-              'Temp':273.15+90,
-              'Press':5*101325}
+state_dict = {'W':w,                # Water
+              'CL':cap,             # Caprolactam
+              'CD':0,               # Cyclic dimer
+              'AA':0,               # Acetic acid
+              'P1':0,               # Polymer, terminated 1 chain length
+              'BACA':0,             # Bounded n6 polymer
+              'TN':0,               # Terminating amine group
+              'TC':0,               # Terminating carboxylic acid
+              'TA':0,               # Terminating acetic acid
+              'CHA':cha,            # Cyclohexylamine
+              'TCHA':0,             # Terminating cyclohexylamine
+              'Temp':273.15+90,     # Temperature in Kelvin
+              'Press':5*101325}     # Pressure in Pascal
 
 units = 'kg'  # convert final units
 init_cond = [i for i in state_dict.values()]  # extract initial conditions for input
 # initialize polymerization object to run simulation with given conditions
 Poly = Polymerization(Temperature=273.15+255,
-                      Initial_Charge=init_cond,
+                      Initial_Cond=init_cond,
                       End_Time=10,
                       ideal=False,
                       P=1*101325,
